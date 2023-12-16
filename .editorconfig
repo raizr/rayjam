@@ -1,0 +1,15 @@
+
+[*]
+
+# ReSharper properties
+resharper_cpp_anonymous_method_declaration_braces = next_line
+resharper_cpp_brace_style = next_line
+resharper_cpp_case_block_braces = next_line
+resharper_cpp_invocable_declaration_braces = next_line
+resharper_cpp_other_braces = next_line
+resharper_cpp_type_declaration_braces = next_line
+resharper_cpp_use_indent_from_vs = false
+resharper_export_declaration_braces = next_line
+resharper_namespace_declaration_braces = next_line
+resharper_requires_expression_braces = next_line
+resharper_space_after_ref_in_data_members = true

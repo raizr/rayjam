@@ -26,16 +26,21 @@
 # Define required environment variables
 #------------------------------------------------------------------------------------------------
 # Define target platform: PLATFORM_DESKTOP, PLATFORM_WEB, PLATFORM_DRM
-PLATFORM              ?= PLATFORM_DESKTOP
+PLATFORM              ?= PLATFORM_WEB
 
 # Define project variables
-PROJECT_NAME          ?= raylib_game
+PROJECT_NAME          ?= asterogue
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
+PROJECT_INCLUDE_PATH ?= ./include
+PROJECT_SRC_PATH ?= ./src
 
-RAYLIB_PATH           ?= ../../raylib
-RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/src
+RAYLIB_PATH           ?= ../raylib
+RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/include
 RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)/src
+
+RAYGUI_PATH           ?= ../raygui
+RAYGUI_INCLUDE_PATH   ?= $(RAYGUI_PATH)/src
 
 # Build mode for project: DEBUG or RELEASE
 BUILD_MODE            ?= DEBUG
@@ -84,11 +89,11 @@ endif
 
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # Emscripten required variables
-    EMSDK_PATH         ?= C:/emsdk
+    EMSDK_PATH         ?= C:/DATA/github/emsdk
     EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
     CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
-    PYTHON_PATH         = $(EMSDK_PATH)/python/3.9.2-1_64bit
-    NODE_PATH           = $(EMSDK_PATH)/node/14.15.5_64bit/bin
+    PYTHON_PATH         = $(EMSDK_PATH)/python/3.9.2-nuget_64bit
+    NODE_PATH           = $(EMSDK_PATH)/node/16.20.0_64bit/bin
     export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
 endif
 
@@ -142,7 +147,7 @@ endif
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -Wno-unused-value    ignore unused return values of some functions (i.e. fread())
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS = -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces -Wunused-result
+CFLAGS = -Wall -std=c++17 -D_DEFAULT_SOURCE -Wno-missing-braces -Wunused-result -DGAME_NAME="\"Asterogue\""
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
@@ -167,7 +172,7 @@ endif
 
 # Define include paths for required headers: INCLUDE_PATHS
 #------------------------------------------------------------------------------------------------
-INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external
+INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/include -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external -I$(RAYGUI_PATH)/src -I$(PROJECT_INCLUDE_PATH) -I$(PROJECT_SRC_PATH)
 
 # Define additional directories containing required header files
 ifeq ($(PLATFORM),PLATFORM_DRM)
@@ -298,7 +303,9 @@ endif
 
 # Define source code files required
 #------------------------------------------------------------------------------------------------
-PROJECT_SOURCE_FILES ?= raylib_game.c
+PROJECT_SOURCE_FILES ?= src/core.cpp
+PROJECT_SOURCE_FILES += src/scene_manager.cpp
+PROJECT_SOURCE_FILES += src/asterogue.cpp
 
 # Define all object files from source files
 OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
