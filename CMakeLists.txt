@@ -22,7 +22,7 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   endif()
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 file(GLOB_RECURSE SOURCE_LIST
@@ -46,6 +46,7 @@ include_directories(
 
 add_compile_definitions(_DEBUG)
 add_compile_definitions(RAYGUI_IMPLEMENTATION)
+add_compile_definitions(RAYLIB_ASEPRITE_IMPLEMENTATION)
 add_executable(Asterogue
     "${SOURCE_LIST}"
 )

@@ -7,11 +7,14 @@
 constexpr float baseReloadTime = 0.5f;
 constexpr float shieldHitMaxLife = 0.35f;
 constexpr float breakingFriction = 0.025f;
+using namespace std::string_literals;
 
 void Player::Init()
 {
     std::string dir = GetWorkingDirectory();
-    shipTexture = LoadTexture((dir + std::string("/sprites/ship.png")).c_str());
+    shipTexture = LoadTexture((dir + "/sprites/ship.png"s).c_str());
+    thrust = LoadAseprite((dir + "/sprites/thrust.aseprite"s).c_str());
+    thrustLoop = LoadAsepriteTag(thrust, "loop");
 }
 
 void Player::Update()
@@ -24,7 +27,7 @@ void Player::Update()
     {
         return;
     }
-
+    UpdateAsepriteTag(&thrustLoop);
     // add some shield power back
     shield += core::Core::getInstance()->GetDeltaTime() * shieldRecharge;
     if (shield > maxShield)
@@ -38,7 +41,6 @@ void Player::Update()
     bool wantBoost = (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) /*&& wantThrust*/;
     bool wantShoot = IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT);
     bool wantBreak = IsKeyDown(KEY_S);
-    float axisThrust = 0.0f;
     if (wantThrust)
     {
         axisThrust = 1.0f;
@@ -46,14 +48,13 @@ void Player::Update()
     else if (IsGamepadAvailable(0))
     {
         axisThrust = Clamp(GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) + 1.0f, 0.0f, 1.0f);
-        //wantThrust = wantThrust || GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) > 0.125f;
-        wantBoost = wantBoost || (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)/* && wantThrust*/);
+        wantBoost = wantBoost || (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN));
         wantShoot = wantShoot || GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) > 0.125f;
         wantBreak = wantBreak || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
     }
 
     // handle rotation by mouse,keyboard, or gamepad
-    if (Vector2LengthSqr(GetMouseDelta()) > 0)
+    if (IsCursorOnScreen() && Vector2LengthSqr(GetMouseDelta()) > 0)
     {
         Vector2 mouseVec = Vector2Normalize(Vector2Subtract(GetMousePosition(),
             Vector2Scale({ (float)GetScreenWidth() , (float)GetScreenHeight() }, 0.5f)));
@@ -78,7 +79,6 @@ void Player::Update()
         {
             input = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
         }
-
         orientation += input * rotation;
     }
     
@@ -90,7 +90,6 @@ void Player::Update()
     {
         orientation += 360;
     }
-
     // boost if we can boost
     if (!wantBoost)
     {
@@ -124,9 +123,8 @@ void Player::Update()
 
     // turn our angle into a vector so we can see what way we are going
     Vector2 shipVector = Vector2{ sinf(orientation * DEG2RAD), -cosf(orientation * DEG2RAD) };
-
     // see how much we could move this frame
-    float speed = maxThrust * axisThrust * core::Core::getInstance()->GetDeltaTime();
+    speed = maxThrust * axisThrust * core::Core::getInstance()->GetDeltaTime();
 
     if (boost)
     {
@@ -180,40 +178,29 @@ void Player::Draw()
 {
     if (isAlive)
     {
-        if (isThrusting) // draw the thrust flame (below the ship so it doesn't clip over it)
+        if (isThrusting)
         {
-            float extension = boost ? 25.0f : 3.0f;
-            float sizeOffset = cosf((float)GetTime() * 20) * extension + (radius * 1.2f);
-            Vector2 offset = { 0, -sizeOffset * 0.5f };
-
-            //size_t sprite = boost ? Sprites::TurboThustSprite : Sprites::ThrustSprite;
-
-            //Sprites::Draw(sprite, Position, Orientation, Vector2{ radius * 0.45f, sizeOffset }, WHITE, offset);
+            Vector2 offset = { 0, -100.0f };
+            if (axisThrust > 0.0f)
+            {
+                if (axisThrust < 0.3f)
+                {
+                    DrawFrameAnim(thrust, position, 0, orientation,{ -1.0f, -1.0f }, WHITE, offset);
+                } else if (axisThrust < 0.7f)
+                {
+                    DrawFrameAnim(thrust, position, 1, orientation, { -1.0f, -1.0f }, WHITE, offset);
+                }
+                else if (axisThrust < 1.0f)
+                {
+                    DrawFrameAnim(thrust, position, 2, orientation, { -1.0f, -1.0f }, WHITE, offset);
+                }
+                else
+                {
+                    DrawFrameAnim(thrustLoop, position, orientation, { -1.0f, -1.0f }, WHITE, offset);
+                }
+            }
         }
-
-        // draw the ship
         DrawNode(shipTexture, position, orientation, { -1.0f, -1.0f }, WHITE, { 0.0f, 0.0f });
-        //Sprites::Draw(Sprites::ShipSprite, Position, Orientation);
-    }
-
-    // the sheild may need to be drawn after we die since that may be the hit that killed us
-    if (shieldHitLifetime > 0)
-    {
-        BeginBlendMode(BLEND_ADDITIVE);
-
-        float param = shieldHitLifetime / shieldHitMaxLife;
-        float invParam = 1.0f - param;
-        float size = radius * 3 + (invParam * radius * 3);
-        //Color c = ColorAlpha(Sprites::ColorLerp(YELLOW, WHITE, param), param);
-
-        //Sprites::Draw(Sprites::ShieldHitBase, Position, ShieldHitAngle, Vector2{ size,size }, c);
-
-        if (param < 0.3f)
-            //Sprites::Draw(Sprites::ShieldHitEnd, Position, ShieldHitAngle, Vector2{ size,size }, c);
-        if (param < 0.6f)
-            //Sprites::Draw(Sprites::ShieldHitMid, Position, ShieldHitAngle, Vector2{ size,size }, c);
-
-        EndBlendMode();
     }
 }
 

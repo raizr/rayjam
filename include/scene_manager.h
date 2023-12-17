@@ -1,6 +1,6 @@
 #pragma once
-#include "player.h"
 #include "raylib.h"
+#include "player.h"
 
 
 namespace scene

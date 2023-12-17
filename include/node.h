@@ -24,7 +24,7 @@ public:
     virtual void Update();
     virtual void Draw() = 0;
     virtual bool Collide(const Node& other);
-protected:
+
     Vector2 position = {};
     float orientation = {};
 

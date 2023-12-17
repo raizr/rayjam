@@ -1,10 +1,8 @@
 #include "core.h"
 
 #include <string>
-#include <utils.h>
 
 #include "raygui.h"
-#include "raymath.h"
 #include "resource.h"
 #include "scene_manager.h"
 
@@ -78,12 +76,13 @@ float Core::GetDeltaTime() const
 #endif
 }
 
-void DrawCenteredText(const char* text, float textSize = 20, float yOffset = 0.5f, float xOffset = 0.5f)
+Vector2 DrawCenteredText(const char* text, float textSize = 20, float yOffset = 0.5f, float xOffset = 0.5f)
 {
     Vector2 size = MeasureTextEx(GetFontDefault(), text, textSize, textSize / 10);
 
     Vector2 pos = { GetScreenWidth() * xOffset - size.x / 2.0f, GetScreenHeight() * yOffset - size.y / 2.0f };
     DrawText(text, int(pos.x), int(pos.y), int(textSize), WHITE);
+    return pos;
 }
 
 void Core::Update()
@@ -139,7 +138,8 @@ void Core::Update()
 void Core::DrawOverlay()
 {
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, 128 });
-    DrawCenteredText("Space Asterogue", 60);
+    auto pos = DrawCenteredText("Space Asterogue", 60);
+    DrawCenteredText("press to start",30, 0.6f, 0.5f);
 }
 
 bool Core::AcceptPressed()

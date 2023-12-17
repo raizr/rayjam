@@ -40,7 +40,7 @@ void SceneManager::Draw()
     Vector2 center = Vector2Scale({ (float)core::gameScreenWidth , (float)core::gameScreenHeight }, 0.5f);
     worldCamera.offset = center;
     worldCamera.target = player.GetPosition();
-    worldCamera.zoom = 0.5f;
+    worldCamera.zoom = 0.3f;
     BeginMode2D(worldCamera);
     // compute the size of the background and shift it based on our movement
     Rectangle screen = { 0,0,  center.x * 2,  center.y * 2 };
@@ -71,4 +71,6 @@ void SceneManager::Draw()
     //world.Draw(screenInWorld);
     player.Draw();
     EndMode2D();
+    DrawText(TextFormat("orientation: %f", player.orientation), 10, 80, 20, RED);
+    DrawText(TextFormat("velocity %f", player.speed), 10, 100, 20, GREEN);
 }
