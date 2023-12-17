@@ -98,9 +98,9 @@
 
 typedef struct ase_t ase_t;
 
-ase_t* cute_aseprite_load_from_file(const char* path, void* mem_ctx);
-ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ctx);
-void cute_aseprite_free(ase_t* aseprite);
+static ase_t* cute_aseprite_load_from_file(const char* path, void* mem_ctx);
+static ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ctx);
+static void cute_aseprite_free(ase_t* aseprite);
 
 #define CUTE_ASEPRITE_MAX_LAYERS (64)
 #define CUTE_ASEPRITE_MAX_SLICES (128)

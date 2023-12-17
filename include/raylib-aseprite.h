@@ -43,37 +43,37 @@ typedef struct AsepriteTag AsepriteTag;                             // A tag spr
 typedef struct AsepriteSlice AsepriteSlice;                         // A slice is a defined region within the Asperite.
 
 // Aseprite functions
-Aseprite LoadAseprite(const char* fileName);                        // Load an .aseprite file
-Aseprite LoadAsepriteFromMemory(unsigned char* fileData, unsigned int size);  // Load an aseprite file from memory
-bool IsAsepriteReady(Aseprite aseprite);                            // Check if the given Aseprite was loaded successfully
-void UnloadAseprite(Aseprite aseprite);                             // Unloads the aseprite file
-void TraceAseprite(Aseprite aseprite);                              // Display all information associated with the aseprite
-Texture GetAsepriteTexture(Aseprite aseprite);                      // Retrieve the raylib texture associated with the aseprite
-int GetAsepriteWidth(Aseprite aseprite);                            // Get the width of the sprite
-int GetAsepriteHeight(Aseprite aseprite);                           // Get the height of the sprite
-void DrawAseprite(Aseprite aseprite, int frame, int posX, int posY, Color tint);
-void DrawAsepriteV(Aseprite aseprite, int frame, Vector2 position, Color tint);
-void DrawAsepriteEx(Aseprite aseprite, int frame, Vector2 position, float rotation, float scale, Color tint);
-void DrawAsepritePro(Aseprite aseprite, int frame, Rectangle dest, Vector2 origin, float rotation, Color tint);
+static Aseprite LoadAseprite(const char* fileName);                        // Load an .aseprite file
+static Aseprite LoadAsepriteFromMemory(unsigned char* fileData, unsigned int size);  // Load an aseprite file from memory
+static bool IsAsepriteReady(Aseprite aseprite);                            // Check if the given Aseprite was loaded successfully
+static void UnloadAseprite(Aseprite aseprite);                             // Unloads the aseprite file
+static void TraceAseprite(Aseprite aseprite);                              // Display all information associated with the aseprite
+static Texture GetAsepriteTexture(Aseprite aseprite);                      // Retrieve the raylib texture associated with the aseprite
+static int GetAsepriteWidth(Aseprite aseprite);                            // Get the width of the sprite
+static int GetAsepriteHeight(Aseprite aseprite);                           // Get the height of the sprite
+static void DrawAseprite(Aseprite aseprite, int frame, int posX, int posY, Color tint);
+static void DrawAsepriteV(Aseprite aseprite, int frame, Vector2 position, Color tint);
+static void DrawAsepriteEx(Aseprite aseprite, int frame, Vector2 position, float rotation, float scale, Color tint);
+static void DrawAsepritePro(Aseprite aseprite, int frame, Rectangle dest, Vector2 origin, float rotation, Color tint);
 
 // Aseprite Tag functions
-AsepriteTag LoadAsepriteTag(Aseprite aseprite, const char* name);   // Load an Aseprite tag animation sequence
-AsepriteTag LoadAsepriteTagFromIndex(Aseprite aseprite, int index); // Load an Aseprite tag animation sequence from its index
-int GetAsepriteTagCount(Aseprite aseprite);                         // Get the total amount of available tags
-bool IsAsepriteTagReady(AsepriteTag tag);                           // Check if the given Aseprite tag was loaded successfully
-void UpdateAsepriteTag(AsepriteTag* tag);                           // Update the tag animation frame
-AsepriteTag GenAsepriteTagDefault();                                // Generate an empty Tag with sane defaults
-void DrawAsepriteTag(AsepriteTag tag, int posX, int posY, Color tint);
-void DrawAsepriteTagV(AsepriteTag tag, Vector2 position, Color tint);
-void DrawAsepriteTagEx(AsepriteTag tag, Vector2 position, float rotation, float scale, Color tint);
-void DrawAsepriteTagPro(AsepriteTag tag, Rectangle dest, Vector2 origin, float rotation, Color tint);
+static AsepriteTag LoadAsepriteTag(Aseprite aseprite, const char* name);   // Load an Aseprite tag animation sequence
+static AsepriteTag LoadAsepriteTagFromIndex(Aseprite aseprite, int index); // Load an Aseprite tag animation sequence from its index
+static int GetAsepriteTagCount(Aseprite aseprite);                         // Get the total amount of available tags
+static bool IsAsepriteTagReady(AsepriteTag tag);                           // Check if the given Aseprite tag was loaded successfully
+static void UpdateAsepriteTag(AsepriteTag* tag);                           // Update the tag animation frame
+static AsepriteTag GenAsepriteTagDefault();                                // Generate an empty Tag with sane defaults
+static void DrawAsepriteTag(AsepriteTag tag, int posX, int posY, Color tint);
+static void DrawAsepriteTagV(AsepriteTag tag, Vector2 position, Color tint);
+static void DrawAsepriteTagEx(AsepriteTag tag, Vector2 position, float rotation, float scale, Color tint);
+static void DrawAsepriteTagPro(AsepriteTag tag, Rectangle dest, Vector2 origin, float rotation, Color tint);
 
 // Aseprite Slice functions
-AsepriteSlice LoadAsepriteSlice(Aseprite aseprite, const char* name);   // Load a slice from an Aseprite based on its name.
-AsepriteSlice LoadAsperiteSliceFromIndex(Aseprite aseprite, int index); // Load a slice from an Aseprite based on its index.
-int GetAsepriteSliceCount(Aseprite aseprite);                       // Get the amount of slices that are defined in the Aseprite.
-bool IsAsepriteSliceReady(AsepriteSlice slice);                     // Return whether or not the given slice was found.
-AsepriteSlice GenAsepriteSliceDefault();                            // Generate empty Aseprite slice data.
+static AsepriteSlice LoadAsepriteSlice(Aseprite aseprite, const char* name);   // Load a slice from an Aseprite based on its name.
+static AsepriteSlice LoadAsperiteSliceFromIndex(Aseprite aseprite, int index); // Load a slice from an Aseprite based on its index.
+static int GetAsepriteSliceCount(Aseprite aseprite);                       // Get the amount of slices that are defined in the Aseprite.
+static bool IsAsepriteSliceReady(AsepriteSlice slice);                     // Return whether or not the given slice was found.
+static AsepriteSlice GenAsepriteSliceDefault();                            // Generate empty Aseprite slice data.
 
 #ifdef __cplusplus
 }
