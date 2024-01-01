@@ -1,4 +1,5 @@
 #pragma once
+#include "enemy.h"
 #include "raylib.h"
 #include "player.h"
 
@@ -21,7 +22,6 @@ namespace scene
 
         inline static SceneManager* instance = nullptr;
         Texture background = { };
-        Image backgroundAnim = { };
         int animFrames = 0;
         unsigned int nextFrameDataOffset = 0;
         int currentAnimFrame = 0;
@@ -29,6 +29,10 @@ namespace scene
         int frameCounter = 0;
         Camera2D worldCamera = { };
         Player player;
+        Shader starfield;
+        float seconds = {};
+        int secondsLoc = {};
+        std::vector<Enemy> enemies;
     };
 
 }

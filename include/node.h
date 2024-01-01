@@ -20,7 +20,7 @@ inline void DrawNode(Texture texture, const Vector2& pos, float rotation, const 
 class Node {
 public:
     virtual ~Node() = default;
-    virtual void Init() = 0;
+    virtual void Init() {}
     virtual void Update();
     virtual void Draw() = 0;
     virtual bool Collide(const Node& other);

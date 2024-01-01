@@ -3,9 +3,17 @@
 #include <string>
 
 #include "core.h"
+#include "pool.h"
 #include "raymath.h"
 
 using namespace scene;
+using namespace std::string_literals;
+
+#if defined(PLATFORM_DESKTOP)
+#define GLSL_VERSION            330
+#else   // PLATFORM_ANDROID, PLATFORM_WEB
+#define GLSL_VERSION            100
+#endif
 
 SceneManager* SceneManager::getInstance()
 {
@@ -25,13 +33,29 @@ void SceneManager::Load()
 {
     std::string dir = GetWorkingDirectory();
     printf("dir %s", dir.c_str());
-    backgroundAnim = LoadImageAnim((dir + std::string("/sprites/background.gif")).c_str(), &animFrames);
-    background = LoadTextureFromImage(backgroundAnim);
+    background = LoadTexture((dir +"/sprites/background.png"s).c_str());
     player.Init();
+    starfield = LoadShader(nullptr, TextFormat((dir + "/shaders/starfield%i.fs"s).c_str() , GLSL_VERSION));
+    secondsLoc = GetShaderLocation(starfield, "seconds");
+    constexpr int enemiesSize = 1000;
+    for (auto i = 0; i < enemiesSize; i++)
+    {
+        auto enemy = Enemy();
+        enemy.Init();
+        enemies.emplace_back(std::move(enemy));
+    }
 }
 
 void SceneManager::Update()
 {
+    seconds += GetFrameTime();
+
+    SetShaderValue(starfield, secondsLoc, &seconds, SHADER_UNIFORM_FLOAT);
+    Pool::UpdateMissle();
+    for (auto& enemy : enemies)
+    {
+        enemy.Update();
+    }
     player.Update();
 }
 
@@ -40,37 +64,36 @@ void SceneManager::Draw()
     Vector2 center = Vector2Scale({ (float)core::gameScreenWidth , (float)core::gameScreenHeight }, 0.5f);
     worldCamera.offset = center;
     worldCamera.target = player.GetPosition();
-    worldCamera.zoom = 0.3f;
+    worldCamera.zoom = 0.5f;
+    float screenSize[2] = { (float)core::gameScreenWidth, (float)core::gameScreenHeight };
+
+    SetShaderValue(starfield, GetShaderLocation(starfield, "position"), &player.GetPosition(), SHADER_UNIFORM_VEC2);
+    SetShaderValue(starfield, GetShaderLocation(starfield, "size"), &screenSize, SHADER_UNIFORM_VEC2);
+
     BeginMode2D(worldCamera);
-    // compute the size of the background and shift it based on our movement
-    Rectangle screen = { 0,0,  center.x * 2,  center.y * 2 };
-    Vector2 screenOriginInWorld = GetScreenToWorld2D(Vector2Zero(), worldCamera);
-    Vector2 screenEdgeInWorld = GetScreenToWorld2D(Vector2{ screen.width, screen.height }, worldCamera);
-    Rectangle screenInWorld = Rectangle{ screenOriginInWorld.x, screenOriginInWorld.y, screenEdgeInWorld.x - screenOriginInWorld.x,screenEdgeInWorld.y - screenOriginInWorld.y };
+        Rectangle screen = { 0, 0,  center.x * 2,  center.y * 2 };
+        Vector2 screenOriginInWorld = GetScreenToWorld2D(Vector2Zero(), worldCamera);
+        Vector2 screenEdgeInWorld = GetScreenToWorld2D(Vector2{ screen.width, screen.height }, worldCamera);
+        Rectangle screenInWorld = Rectangle{ screenOriginInWorld.x, screenOriginInWorld.y, screenEdgeInWorld.x - screenOriginInWorld.x,screenEdgeInWorld.y - screenOriginInWorld.y };
 
-    float bgScale = 0.5f;
-    Rectangle sourceRect = Rectangle{ screenInWorld.x * bgScale, screenInWorld.y * bgScale, screenInWorld.width * bgScale, screenInWorld.height * bgScale };
-    frameCounter++;
-    if (frameCounter >= frameDelay)
-    {
-        // Move to next frame
-        // NOTE: If final frame is reached we return to first frame
-        currentAnimFrame++;
-        if (currentAnimFrame >= animFrames) currentAnimFrame = 0;
+        float bgScale = 0.05f;
+        Rectangle sourceRect = Rectangle{ screenInWorld.x * bgScale, screenInWorld.y * bgScale, screenInWorld.width * bgScale, screenInWorld.height * bgScale };
 
-        // Get memory offset position for next frame data in image.data
-        nextFrameDataOffset = backgroundAnim.width * backgroundAnim.height * 4 * currentAnimFrame;
-
-        // Update GPU texture data with next frame image data
-        // WARNING: Data size (frame size) and pixel format must match already created texture
-        UpdateTexture(background, (unsigned char*)backgroundAnim.data + nextFrameDataOffset);
-        frameCounter = 0;
-    }
-    DrawTexturePro(background, sourceRect, screenInWorld, Vector2Zero(), 0, WHITE);
-    // draw the world and pass in the viewport window in world space for culling
-    //world.Draw(screenInWorld);
-    player.Draw();
+        BeginShaderMode(starfield);
+            DrawTexturePro(background, sourceRect, screenInWorld, Vector2Zero(), 0, WHITE);
+        EndShaderMode();
+        Pool::DrawMissle();
+        for (auto& enemy : enemies)
+        {
+            enemy.Draw();
+        }
+        player.Draw();
     EndMode2D();
-    DrawText(TextFormat("orientation: %f", player.orientation), 10, 80, 20, RED);
-    DrawText(TextFormat("velocity %f", player.speed), 10, 100, 20, GREEN);
+    DrawText(TextFormat("pos: %f %f %f", player.GetPosition().x, player.GetPosition().y, player.axisThrust), 10, 10, 20, WHITE);
+    int i = 10;
+    /*for (auto& enemy : enemies)
+    {
+        i += 20;
+        DrawText(TextFormat("pos: %f %f %f", enemy.GetPosition().x, enemy.GetPosition().y, enemy.axisThrust), 10, i, 20, GREEN);
+    }*/
 }

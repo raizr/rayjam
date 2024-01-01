@@ -50,8 +50,9 @@ public:
     void Update() override;
     void Draw() override;
 	const Vector2& GetPosition() const;
+    const Vector2& GetDirection() const;
 
-	Texture shipTexture = {};
+    Texture shipTexture = {};
 	Aseprite thrust = {};
 	AsepriteTag thrustLoop = {};
 	float reload = 0;
@@ -76,5 +77,6 @@ public:
 	float speed = {};
 	float axisThrust = 0.0f;
 	int score = 0;
+	Vector2 shipVector;
 	bool isAlive = true;
 };

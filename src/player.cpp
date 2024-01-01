@@ -2,6 +2,7 @@
 #include <string>
 
 #include "core.h"
+#include "missle.h"
 #include "raymath.h"
 
 constexpr float baseReloadTime = 0.5f;
@@ -41,6 +42,7 @@ void Player::Update()
     bool wantBoost = (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) /*&& wantThrust*/;
     bool wantShoot = IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT);
     bool wantBreak = IsKeyDown(KEY_S);
+    axisThrust = 0.0f;
     if (wantThrust)
     {
         axisThrust = 1.0f;
@@ -122,7 +124,7 @@ void Player::Update()
     reload -= core::Core::getInstance()->GetDeltaTime() * shotSpeedMultiplyer;
 
     // turn our angle into a vector so we can see what way we are going
-    Vector2 shipVector = Vector2{ sinf(orientation * DEG2RAD), -cosf(orientation * DEG2RAD) };
+    shipVector = Vector2{ sinf(orientation * DEG2RAD), -cosf(orientation * DEG2RAD) };
     // see how much we could move this frame
     speed = maxThrust * axisThrust * core::Core::getInstance()->GetDeltaTime();
 
@@ -168,8 +170,7 @@ void Player::Update()
         Vector2 shotPos = Vector2Add(position, Vector2Scale(shipVector, radius * 1.0f));
 
         Vector2 shotVel = Vector2Add(velocity, Vector2Scale(shipVector, 1500));
-        //Bullet::Create(shotPos, shotVel, Orientation);
-
+        Missle::Create(shotPos, shotVel, orientation);
         //Sounds::PlaySoundEffect(Sounds::Shot);
     }
 }
@@ -207,4 +208,9 @@ void Player::Draw()
 const Vector2& Player::GetPosition() const
 {
     return position;
+}
+
+const Vector2& Player::GetDirection() const
+{
+    return shipVector;
 }
