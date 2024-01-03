@@ -2,8 +2,10 @@
 #include <string>
 
 #include "core.h"
+#include "explosion.h"
 #include "missle.h"
 #include "raymath.h"
+#include "resource.h"
 
 constexpr float baseReloadTime = 0.5f;
 constexpr float shieldHitMaxLife = 0.35f;
@@ -12,16 +14,15 @@ using namespace std::string_literals;
 
 void Player::Init()
 {
+    type = NodeType::PLAYER;
     std::string dir = GetWorkingDirectory();
-    shipTexture = LoadTexture((dir + "/sprites/ship.png"s).c_str());
-    thrust = LoadAseprite((dir + "/sprites/thrust.aseprite"s).c_str());
+    shipTexture = Resources::ship;
+    thrust = Resources::thrust;
     thrustLoop = LoadAsepriteTag(thrust, "loop");
 }
 
 void Player::Update()
 {
-
-    // decay the shield hit time (even if we are dead, so it animates)
     shieldHitLifetime -= core::Core::getInstance()->GetDeltaTime();
 
     if (!isAlive)
@@ -29,19 +30,17 @@ void Player::Update()
         return;
     }
     UpdateAsepriteTag(&thrustLoop);
-    // add some shield power back
     shield += core::Core::getInstance()->GetDeltaTime() * shieldRecharge;
     if (shield > maxShield)
     {
         shield = maxShield;
     }
 
-
-    // gather our input states
     bool wantThrust = IsKeyDown(KEY_W) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
     bool wantBoost = (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) /*&& wantThrust*/;
     bool wantShoot = IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT);
     bool wantBreak = IsKeyDown(KEY_S);
+
     axisThrust = 0.0f;
     if (wantThrust)
     {
@@ -73,9 +72,13 @@ void Player::Update()
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
         {
             if (IsKeyDown(KEY_A))
+            {
                 input -= 1;
+            }
             if (IsKeyDown(KEY_D))
+            {
                 input += 1;
+            }
         }
         else if (IsGamepadAvailable(0))
         {
@@ -97,35 +100,37 @@ void Player::Update()
     {
         boost = false;
     }
-    else if (wantBoost && Power > maxPower / 4)
+    else if (wantBoost && power > maxPower / 4)
     {
         boost = true;
     }
-    else if (Power <= 1)
+    else if (power <= 1)
     {
         boost = false;
     }
 
     if (boost)
     {
-        Power -= core::Core::getInstance()->GetDeltaTime() * 400;
+        power -= core::Core::getInstance()->GetDeltaTime() * 400;
     }
-    else if (Power < maxPower)
+    else if (power < maxPower)
     {
-        Power += core::Core::getInstance()->GetDeltaTime() * 20;
+        power += core::Core::getInstance()->GetDeltaTime() * 20;
     }
 
-    if (Power < 0)
-        Power = 0;
-    if (Power > maxPower)
-        Power = maxPower;
+    if (power < 0)
+    {
+        power = 0;
+    }
+    if (power > maxPower)
+    {
+        power = maxPower;
+    }
 
     // decay the reload timer
     reload -= core::Core::getInstance()->GetDeltaTime() * shotSpeedMultiplyer;
 
-    // turn our angle into a vector so we can see what way we are going
     shipVector = Vector2{ sinf(orientation * DEG2RAD), -cosf(orientation * DEG2RAD) };
-    // see how much we could move this frame
     speed = maxThrust * axisThrust * core::Core::getInstance()->GetDeltaTime();
 
     if (boost)
@@ -133,7 +138,6 @@ void Player::Update()
         speed *= boostMultiplyer;
     }
 
-    // add our desired thrust vector to our current vector, this is what gives us intertia
     if (axisThrust > 0.0f)
     {
         velocity = Vector2Add(velocity, Vector2Scale(shipVector, speed));
@@ -153,13 +157,19 @@ void Player::Update()
     Vector2 normVel = Vector2Normalize(velocity);
     Vector2 friction = Vector2Scale(normVel, -frictionScale * GetFrameTime());
     if (Vector2LengthSqr(friction) >= Vector2LengthSqr(velocity))
+    {
         velocity = { 0, 0 };
+    }
     else
+    {
         velocity = Vector2Add(velocity, friction);
+    }
 
     float maxSpeed = boost ? 5000.0f : 2000.0f;
     if (Vector2LengthSqr(velocity) > maxSpeed * maxSpeed)
+    {
         velocity = Vector2Scale(normVel, maxSpeed);
+    }
 
     position = Vector2Add(position, Vector2Scale(velocity, core::Core::getInstance()->GetDeltaTime()));
 
@@ -170,7 +180,7 @@ void Player::Update()
         Vector2 shotPos = Vector2Add(position, Vector2Scale(shipVector, radius * 1.0f));
 
         Vector2 shotVel = Vector2Add(velocity, Vector2Scale(shipVector, 1500));
-        Missle::Create(shotPos, shotVel, orientation);
+        Missle::Create(shotPos, shotVel, orientation, type == NodeType::PLAYER);
         //Sounds::PlaySoundEffect(Sounds::Shot);
     }
 }
@@ -181,7 +191,7 @@ void Player::Draw()
     {
         if (isThrusting)
         {
-            Vector2 offset = { 0, -100.0f };
+            Vector2 offset = { 0, -50.0f };
             if (axisThrust > 0.0f)
             {
                 if (axisThrust < 0.3f)
@@ -213,4 +223,26 @@ const Vector2& Player::GetPosition() const
 const Vector2& Player::GetDirection() const
 {
     return shipVector;
+}
+
+bool Player::Collide(Missle& other)
+{
+    bool hit = Node::Collide(other);
+    if (hit && !other.byPlayer)
+    {
+        OnHit();
+    }
+
+    return hit;
+}
+
+void Player::OnHit()
+{
+    Explosion::Create(position, 1);
+    life--;
+    if (life <= 0)
+    {
+        Explosion::Create(position, radius);
+        isAlive = false;
+    }
 }

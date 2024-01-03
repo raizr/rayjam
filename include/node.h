@@ -17,14 +17,24 @@ inline void DrawNode(Texture texture, const Vector2& pos, float rotation, const 
 	DrawTexturePro(texture, Rectangle{ 0.0f, 0.0f, dest.width, dest.height }, dest, center, rotation, tint);
 }
 
+enum class NodeType
+{
+	NONE,
+    PLAYER,
+	ENEMY,
+	MISSLE,
+	EXPLOSION
+};
+
 class Node {
 public:
     virtual ~Node() = default;
     virtual void Init() {}
     virtual void Update();
-    virtual void Draw() = 0;
-    virtual bool Collide(const Node& other);
+    virtual void Draw() {};
+    virtual bool Collide(Node& other);
 
+	NodeType type = NodeType::NONE;
     Vector2 position = {};
     float orientation = {};
 

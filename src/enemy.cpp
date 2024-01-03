@@ -1,8 +1,11 @@
 #include "enemy.h"
 
 #include "core.h"
+#include "explosion.h"
 #include "missle.h"
 #include "raymath.h"
+#include "resource.h"
+#include "scene_manager.h"
 
 constexpr float breakingFriction = 0.025f;
 constexpr float baseReloadTime = 0.5f;
@@ -22,13 +25,14 @@ inline float GetRandomValueF(float min, float max)
 
 void Enemy::Init()
 {
+    type = NodeType::ENEMY;
     std::string dir = GetWorkingDirectory();
-    shipTexture = LoadTexture((dir + "/sprites/ship.png"s).c_str());
-    thrust = LoadAseprite((dir + "/sprites/thrust.aseprite"s).c_str());
+    shipTexture = Resources::ship;
+    thrust = Resources::thrust;
     thrustLoop = LoadAsepriteTag(thrust, "loop");
+    radius = 40.0f;
 
-
-    axisThrust = GetRandomValueF(0.3f, 1.0f);
+    axisThrust = GetRandomValueF(0.5f, 0.8f);
     position = {
         GetRandomValueF(-10000.0f, 10000.f),
         GetRandomValueF(-10000.0f, 10000.f)
@@ -51,18 +55,26 @@ void Enemy::Update()
     {
         shield = maxShield;
     }
-
-    if (TimerDone(timer))
+    if (!isFound)
     {
-        orientation = GetRandomValueF(orientation - 10.f, orientation + 10.f);
-        StartTimer(&timer, 5.0);
-        
+        if (TimerDone(timer))
+        {
+            orientation = GetRandomValueF(orientation - 10.f, orientation + 10.f);
+            StartTimer(&timer, 5.0);
+        }
     }
-    // gather our input states
-    bool wantThrust = false;
     bool wantBoost = false;
     bool wantShoot = false;
     bool wantBreak = false;
+    auto& player = scene::SceneManager::getInstance()->GetPlayer();
+    isFound = CheckCollisionCircles(position, enemyRadius, player.position, player.radius) && player.isAlive;
+    if (isFound)
+    {
+        orientation = -Vector2LineAngle((position), (player.position)) * RAD2DEG + 90;
+        auto distance = Vector2Distance(position, player.position);
+        axisThrust = distance / enemyRadius;
+        wantShoot = true;
+    }
     
     while (orientation > 180)
     {
@@ -72,37 +84,47 @@ void Enemy::Update()
     {
         orientation += 360;
     }
-    // boost if we can boost
     if (!wantBoost)
     {
         boost = false;
     }
-    else if (wantBoost && Power > maxPower / 4)
+    else if (wantBoost && power > maxPower / 4)
     {
         boost = true;
     }
-    else if (Power <= 1)
+    else if (power <= 1)
     {
         boost = false;
     }
 
     if (boost)
     {
-        Power -= core::Core::getInstance()->GetDeltaTime() * 400;
+        power -= core::Core::getInstance()->GetDeltaTime() * 400;
     }
-    else if (Power < maxPower)
+    else if (power < maxPower)
     {
-        Power += core::Core::getInstance()->GetDeltaTime() * 20;
+        power += core::Core::getInstance()->GetDeltaTime() * 20;
     }
 
-    if (Power < 0)
-        Power = 0;
-    if (Power > maxPower)
-        Power = maxPower;
+    if (power < 0)
+    {
+        power = 0;
+    }
+    if (power > maxPower)
+    {
+        power = maxPower;
+    }
 
     reload -= core::Core::getInstance()->GetDeltaTime() * shotSpeedMultiplyer;
-
-    shipVector = Vector2{ sinf(orientation * DEG2RAD), -cosf(orientation * DEG2RAD) };
+    if (isFound)
+    {
+        //shipVector = enemyDirection;
+    }
+    else
+    {
+    }
+        shipVector = Vector2{ sinf(orientation * DEG2RAD),
+            -cosf(orientation * DEG2RAD) };
     speed = maxThrust * axisThrust * core::Core::getInstance()->GetDeltaTime();
 
     if (boost)
@@ -114,10 +136,6 @@ void Enemy::Update()
     {
         velocity = Vector2Add(velocity, Vector2Scale(shipVector, speed));
         isThrusting = true;
-    }
-    else
-    {
-        //isThrusting = false;
     }
 
     float frictionScale = 90;
@@ -153,3 +171,22 @@ void Enemy::Update()
         //Sounds::PlaySoundEffect(Sounds::Shot);
     }
 }
+
+void Enemy::Draw()
+{
+    DrawCircleLines(position.x, position.y, enemyRadius, RED);
+    Player::Draw();
+
+}
+
+bool Enemy::Collide(Missle& other)
+{
+    bool hit = Node::Collide(other);
+    if (hit && other.byPlayer)
+    {
+        OnHit();
+    }
+
+    return hit;
+}
+

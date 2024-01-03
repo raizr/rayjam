@@ -2,6 +2,7 @@
 #include "node.h"
 #include "raylib.h"
 #include "json.h"
+#include "missle.h"
 #include "raylib-aseprite.h"
 
 static constexpr float NominalShield = 1000;
@@ -51,6 +52,8 @@ public:
     void Draw() override;
 	const Vector2& GetPosition() const;
     const Vector2& GetDirection() const;
+	virtual bool Collide(Missle& other);
+    void OnHit();
 
     Texture shipTexture = {};
 	Aseprite thrust = {};
@@ -66,7 +69,7 @@ public:
 	float shield = maxShield;
 
 	float maxPower = NominalPower;
-	float Power = maxPower;
+	float power = maxPower;
 
 	float maxThrust = NominalThrust;
 	float boostMultiplyer = NominalBoostMultiplyer;
@@ -77,6 +80,7 @@ public:
 	float speed = {};
 	float axisThrust = 0.0f;
 	int score = 0;
+	int life = 5;
 	Vector2 shipVector;
 	bool isAlive = true;
 };

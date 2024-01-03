@@ -20,7 +20,7 @@ void Node::Update()
     }
 }
 
-bool Node::Collide(const Node& other)
+bool Node::Collide(Node& other)
 {
     return CheckCollisionCircles(position, radius, other.position, other.radius);
 }

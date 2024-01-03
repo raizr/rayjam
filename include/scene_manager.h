@@ -14,7 +14,7 @@ namespace scene
         void Load();
         void Update();
         void Draw();
-
+        Player& GetPlayer();
 
     private:
         SceneManager() = default;
@@ -22,17 +22,11 @@ namespace scene
 
         inline static SceneManager* instance = nullptr;
         Texture background = { };
-        int animFrames = 0;
-        unsigned int nextFrameDataOffset = 0;
-        int currentAnimFrame = 0;
-        int frameDelay = 16;
-        int frameCounter = 0;
         Camera2D worldCamera = { };
         Player player;
-        Shader starfield;
+        Shader starfield = {};
         float seconds = {};
         int secondsLoc = {};
-        std::vector<Enemy> enemies;
     };
 
 }

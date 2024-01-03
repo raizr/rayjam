@@ -30,6 +30,7 @@ void Core::Init()
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "Space Asterogue");
     SearchAndSetResourceDir("resources");
+    Resources::LoadTextures();
     std::string dir = GetWorkingDirectory();
     GuiLoadStyle((dir + "/style_cyber.rgs").c_str());
     HideCursor();

@@ -37,13 +37,7 @@ void SceneManager::Load()
     player.Init();
     starfield = LoadShader(nullptr, TextFormat((dir + "/shaders/starfield%i.fs"s).c_str() , GLSL_VERSION));
     secondsLoc = GetShaderLocation(starfield, "seconds");
-    constexpr int enemiesSize = 1000;
-    for (auto i = 0; i < enemiesSize; i++)
-    {
-        auto enemy = Enemy();
-        enemy.Init();
-        enemies.emplace_back(std::move(enemy));
-    }
+    Pool::createEnemies(10000);
 }
 
 void SceneManager::Update()
@@ -52,10 +46,8 @@ void SceneManager::Update()
 
     SetShaderValue(starfield, secondsLoc, &seconds, SHADER_UNIFORM_FLOAT);
     Pool::UpdateMissle();
-    for (auto& enemy : enemies)
-    {
-        enemy.Update();
-    }
+    Pool::UpdateEnemies();
+    Pool::UpdateExplosions();
     player.Update();
 }
 
@@ -83,17 +75,24 @@ void SceneManager::Draw()
             DrawTexturePro(background, sourceRect, screenInWorld, Vector2Zero(), 0, WHITE);
         EndShaderMode();
         Pool::DrawMissle();
-        for (auto& enemy : enemies)
-        {
-            enemy.Draw();
-        }
+        Pool::DrawEnemies();
+        Pool::DrawExplosions();
         player.Draw();
     EndMode2D();
     DrawText(TextFormat("pos: %f %f %f", player.GetPosition().x, player.GetPosition().y, player.axisThrust), 10, 10, 20, WHITE);
-    int i = 10;
-    /*for (auto& enemy : enemies)
+    DrawText(TextFormat("vector: %f %f", player.shipVector.x, player.shipVector.y), 10, 20, 0, WHITE);
+    int i = 15;
+    for (auto& enemy : Pool::enemies)
     {
-        i += 20;
-        DrawText(TextFormat("pos: %f %f %f", enemy.GetPosition().x, enemy.GetPosition().y, enemy.axisThrust), 10, i, 20, GREEN);
-    }*/
+        if (enemy.isFound)
+        {
+            i += 20;
+            DrawText(TextFormat("radius: %f", enemy.orientation), 10, i, 20, GREEN);
+        }
+    }
+}
+
+Player& SceneManager::GetPlayer()
+{
+    return player;
 }
