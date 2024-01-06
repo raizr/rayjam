@@ -16,6 +16,7 @@ namespace core
         None,
         Playing,
         Paused,
+        Lose
     };
 
     static constexpr int screenWidth = 1280;
@@ -35,7 +36,9 @@ namespace core
         float GetDeltaTime() const;
 
         void Update();
-        void DrawOverlay();
+        void DrawMenu();
+        void DrawLoseMenu();
+        void OnLose();
         bool AcceptPressed();
 
         bool IsPaused() { return gameState == GameState::Paused; }

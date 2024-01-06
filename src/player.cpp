@@ -6,15 +6,17 @@
 #include "missle.h"
 #include "raymath.h"
 #include "resource.h"
+#include "scene_manager.h"
 
-constexpr float baseReloadTime = 0.5f;
 constexpr float shieldHitMaxLife = 0.35f;
 constexpr float breakingFriction = 0.025f;
-using namespace std::string_literals;
 
 void Player::Init()
 {
     type = NodeType::PLAYER;
+    life = 5;
+    radius = 40.0f;
+    isAlive = true;
     std::string dir = GetWorkingDirectory();
     shipTexture = Resources::ship;
     thrust = Resources::thrust;
@@ -171,6 +173,7 @@ void Player::Update()
         velocity = Vector2Scale(normVel, maxSpeed);
     }
 
+
     position = Vector2Add(position, Vector2Scale(velocity, core::Core::getInstance()->GetDeltaTime()));
 
     if (wantShoot && reload <= 0)
@@ -182,6 +185,25 @@ void Player::Update()
         Vector2 shotVel = Vector2Add(velocity, Vector2Scale(shipVector, 1500));
         Missle::Create(shotPos, shotVel, orientation, type == NodeType::PLAYER);
         //Sounds::PlaySoundEffect(Sounds::Shot);
+    }
+    Vector2 point1;
+    Vector2 point2;
+    bool collision = false;
+    Vector2 ray = Vector2Add(position, Vector2Scale(shipVector, 100.0f));
+    Vector2 collisionPoint;
+    auto& bounds = scene::SceneManager::getInstance()->GetMazeBounds();
+    for (auto& bound : bounds)
+    {
+        point1 = { bound.x, bound.y };
+        point2 = { bound.width, bound.height };
+
+        collision = CheckCollisionLines(point1, point2, position, ray, &collisionPoint);
+        if (collision)
+        {
+            velocity.x = position.x - collisionPoint.x;
+            velocity.y = position.y - collisionPoint.y;
+            break;
+        }
     }
 }
 
@@ -244,5 +266,9 @@ void Player::OnHit()
     {
         Explosion::Create(position, radius);
         isAlive = false;
+        if (type == NodeType::PLAYER)
+        {
+            core::Core::getInstance()->OnLose();
+        }
     }
 }

@@ -1,9 +1,9 @@
 #pragma once
 #include "raylib-aseprite.h"
 #include "raylib.h"
+#include <string>
 #include <array>
 
-using namespace std::string_literals;
 
 inline bool SearchAndSetResourceDir(const char* folderName)
 {
@@ -56,15 +56,20 @@ struct Resources
 {
     static void LoadTextures()
     {
+        //using std::string_literals::operator""s;
         std::string dir = GetWorkingDirectory();
-        ship = LoadTexture((dir + "/sprites/ship2.png"s).c_str());
-        thrust = LoadAseprite((dir + "/sprites/thrust.aseprite"s).c_str());
+        ship = LoadTexture((dir + "/sprites/ship2.png").c_str());
+        missle = LoadTexture((dir + "/sprites/missle.png").c_str());
+        thrust = LoadAseprite((dir + "/sprites/thrust.aseprite").c_str());
         animExplosionSprite = {
-            LoadAseprite((dir + "/sprites/explosion.aseprite"s).c_str()),
-            LoadAseprite((dir + "/sprites/explosion-a.aseprite"s).c_str())
+            LoadAseprite((dir + "/sprites/explosion.aseprite").c_str()),
+            LoadAseprite((dir + "/sprites/explosion-a.aseprite").c_str())
         };
+        asteroid = LoadTexture((dir + "/sprites/asteroid.png").c_str());
     }
     inline static Texture ship;
     inline static Aseprite thrust;
+    inline static Texture missle;
     inline static std::array<Aseprite, 2> animExplosionSprite;
+    inline static Texture asteroid;
 };

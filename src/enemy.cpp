@@ -9,19 +9,7 @@
 
 constexpr float breakingFriction = 0.025f;
 constexpr float baseReloadTime = 0.5f;
-using namespace std::string_literals;
 
-inline float GetRandomValueF(float min, float max)
-{
-    if (min > max)
-    {
-        float tmp = max;
-        max = min;
-        min = tmp;
-    }
-    double param = rand() / (double)RAND_MAX;
-    return float(min + (max - min) * param);
-}
 
 void Enemy::Init()
 {
@@ -31,12 +19,12 @@ void Enemy::Init()
     thrust = Resources::thrust;
     thrustLoop = LoadAsepriteTag(thrust, "loop");
     radius = 40.0f;
-
+    baseReloadTime = 1.0f;
     axisThrust = GetRandomValueF(0.5f, 0.8f);
-    position = {
+    /*position = {
         GetRandomValueF(-10000.0f, 10000.f),
         GetRandomValueF(-10000.0f, 10000.f)
-    };
+    };*/
     StartTimer(&timer, 5.0);
     orientation = GetRandomValueF(0.0f, 360.f);
 }
@@ -55,6 +43,7 @@ void Enemy::Update()
     {
         shield = maxShield;
     }
+    
     if (!isFound)
     {
         if (TimerDone(timer))
@@ -67,7 +56,7 @@ void Enemy::Update()
     bool wantShoot = false;
     bool wantBreak = false;
     auto& player = scene::SceneManager::getInstance()->GetPlayer();
-    isFound = CheckCollisionCircles(position, enemyRadius, player.position, player.radius) && player.isAlive;
+    //isFound = CheckCollisionCircles(position, enemyRadius, player.position, player.radius) && player.isAlive;
     if (isFound)
     {
         orientation = -Vector2LineAngle((position), (player.position)) * RAD2DEG + 90;
@@ -116,15 +105,7 @@ void Enemy::Update()
     }
 
     reload -= core::Core::getInstance()->GetDeltaTime() * shotSpeedMultiplyer;
-    if (isFound)
-    {
-        //shipVector = enemyDirection;
-    }
-    else
-    {
-    }
-        shipVector = Vector2{ sinf(orientation * DEG2RAD),
-            -cosf(orientation * DEG2RAD) };
+    shipVector = Vector2{ sinf(orientation * DEG2RAD), -cosf(orientation * DEG2RAD) };
     speed = maxThrust * axisThrust * core::Core::getInstance()->GetDeltaTime();
 
     if (boost)
@@ -170,11 +151,30 @@ void Enemy::Update()
         Missle::Create(shotPos, shotVel, orientation);
         //Sounds::PlaySoundEffect(Sounds::Shot);
     }
+    Vector2 point1;
+    Vector2 point2;
+    auto& bounds = scene::SceneManager::getInstance()->GetMazeBounds();
+    bool collision = false;
+    Vector2 ray = Vector2Add(position, Vector2Scale(shipVector, 100.0f));
+    Vector2 collisionPoint;
+    for (auto& bound : bounds)
+    {
+        point1 = { bound.x, bound.y };
+        point2 = { bound.width, bound.height };
+
+        collision = CheckCollisionLines(point1, point2, position, ray, &collisionPoint);
+        if (collision)
+        {
+            velocity.x = position.x - collisionPoint.x;
+            velocity.y = position.y - collisionPoint.y;
+            orientation = -Vector2LineAngle((collisionPoint), (position)) * RAD2DEG + 90;
+            break;
+        }
+    }
 }
 
 void Enemy::Draw()
 {
-    DrawCircleLines(position.x, position.y, enemyRadius, RED);
     Player::Draw();
 
 }

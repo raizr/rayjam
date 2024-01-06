@@ -101,6 +101,16 @@ void Core::Update()
         }
     }
 
+    if (gameState == GameState::Lose)
+    {
+        if (AcceptPressed())
+        {
+            scene::SceneManager::getInstance()->Reset();
+            scene::SceneManager::getInstance()->Load();
+            gameState = GameState::Playing;
+        }
+    }
+
     if (gameState == GameState::Playing)
     {
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_TAB))
@@ -127,7 +137,11 @@ void Core::Update()
         }, Vector2 { 0, 0 }, 0.0f, WHITE);
     if (gameState == GameState::Paused)
     {
-        DrawOverlay();
+        DrawMenu();
+    }
+    if (gameState == GameState::Lose)
+    {
+        DrawLoseMenu();
     }
     if (IsCursorOnScreen())
     {
@@ -136,11 +150,24 @@ void Core::Update()
     EndDrawing();
 }
 
-void Core::DrawOverlay()
+void Core::DrawMenu()
 {
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, 128 });
-    auto pos = DrawCenteredText("Space Asterogue", 60);
+    DrawCenteredText("Space Asterogue", 60);
     DrawCenteredText("press to start",30, 0.6f, 0.5f);
+}
+
+void Core::DrawLoseMenu()
+{
+    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, 128 });
+    DrawCenteredText("Space Asterogue", 60);
+    DrawCenteredText("You Lose", 30, 0.6f, 0.5f);
+    DrawCenteredText("press to restart", 30, 0.7f, 0.5f);
+}
+
+void Core::OnLose()
+{
+    gameState = GameState::Lose;
 }
 
 bool Core::AcceptPressed()

@@ -7,7 +7,6 @@
 #include "resource.h"
 
 constexpr float maxLifetime = 0.5f;
-using namespace std::string_literals;
 
 void Explosion::Init()
 {

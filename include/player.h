@@ -79,8 +79,8 @@ public:
 	float shieldHitLifetime = -1;
 	float speed = {};
 	float axisThrust = 0.0f;
+	float baseReloadTime = 0.5f;
 	int score = 0;
 	int life = 5;
 	Vector2 shipVector;
-	bool isAlive = true;
 };
