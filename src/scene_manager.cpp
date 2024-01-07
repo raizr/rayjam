@@ -3,7 +3,6 @@
 #include <string>
 
 #include "core.h"
-#include "mazegen.h"
 #include "pool.h"
 #include "raymath.h"
 

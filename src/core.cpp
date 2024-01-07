@@ -1,8 +1,9 @@
 #include "core.h"
 
 #include <string>
-
+#include <cmath>
 #include "raygui.h"
+#include "raymath.h"
 #include "resource.h"
 #include "scene_manager.h"
 
@@ -32,7 +33,7 @@ void Core::Init()
     SearchAndSetResourceDir("resources");
     Resources::LoadTextures();
     std::string dir = GetWorkingDirectory();
-    GuiLoadStyle((dir + "/style_cyber.rgs").c_str());
+    //GuiLoadStyle((dir + "/style_cyber.rgs").c_str());
     HideCursor();
     SetExitKey(KEY_NULL);
     SetTargetFPS(FIXED_FRAME_RATE);
@@ -56,6 +57,35 @@ int Core::GetCurrentLevel()
 {
     return level;
 }
+#if defined(PLATFORM_WEB)
+#include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
+EM_JS(bool, is_touch, (), {
+    return is_touch_screen = 'ontouchstart' in document.documentElement;
+});
+#endif
+bool Core::isTouch()
+{
+#if defined(PLATFORM_WEB)
+    return is_touch();
+#endif
+    return false;
+}
+
+bool Core::isDragGesture()
+{
+    return isDrag;
+}
+
+Vector2 Core::getDragVector()
+{
+    return Vector2Normalize(Vector2Subtract(holdLast, touchPosition));
+}
+
+bool Core::GetTouchTap()
+{
+    return touchTap;
+}
 
 Core::~Core()
 {
@@ -76,7 +106,7 @@ float Core::GetDeltaTime() const
     }
 
 #ifdef _DEBUG
-    return 1.0f / FIXED_FRAME_RATE;		// if we are debugging, use a fixed frame rate so that we doin't get lag spikes when hitting breakpoints
+    return 1.0f / FIXED_FRAME_RATE;
 #else
     return GetFrameTime();
 #endif
@@ -93,6 +123,41 @@ Vector2 DrawCenteredText(const char* text, float textSize = 20, float yOffset = 
 
 void Core::Update()
 {
+    if (isTouch())
+    {
+        lastGesture = currentGesture;
+        currentGesture = GetGestureDetected();
+        touchPosition = GetTouchPosition(0);
+        if (CheckCollisionPointRec(touchPosition, touchArea))
+        {
+            isDrag = (currentGesture != GESTURE_NONE);
+        }
+        if (isDrag)
+        {
+            if (currentGesture != lastGesture)
+            {
+                switch (currentGesture)
+                {
+                    case GESTURE_TAP:
+                        break;
+                    case GESTURE_HOLD: 
+                        holdLast = touchPosition;
+                        break;
+                    case GESTURE_DRAG:
+                        dragCurrent = touchPosition;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        touchRightPosition = GetTouchPosition(1);
+        touchTap = (CheckCollisionPointRec(touchRightPosition, touchRight)
+            || CheckCollisionPointRec(touchPosition, touchRight))
+                && ((currentGesture == GESTURE_TAP) || (currentGesture == GESTURE_HOLD));
+    }
+
+
     if (gameState != GameState::Paused)
     {
         time += GetDeltaTime();
@@ -159,6 +224,18 @@ void Core::Update()
                     (GetScreenHeight() - ((float)gameScreenHeight * scale)) * 0.5f,
                     (float)gameScreenWidth* scale, (float)gameScreenHeight* scale
         }, Vector2 { 0, 0 }, 0.0f, WHITE);
+        pauseBound = { 10.0f, 10.f,
+            (float)Resources::UIPause.width,
+            (float)Resources::UIPause.height
+        };
+        if (CheckCollisionPointRec(GetMousePosition(), pauseBound)
+            || CheckCollisionPointRec(touchPosition, pauseBound))
+        {
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            {
+                gameState = GameState::Paused;
+            }
+        }
         DrawGUI();
     if (gameState == GameState::ChangingLevel)
     {
@@ -189,7 +266,10 @@ void Core::DrawMenu()
 
 void Core::DrawGUI()
 {
-    DrawText(TextFormat("Level %d", GetCurrentLevel()), 10, 10, 40, GRAY);
+    DrawTextureRec(Resources::UIPause,
+        {0.0f, 0.0f, (float)Resources::UIPause.width, (float)Resources::UIPause.height},
+        { pauseBound.x, pauseBound.y }, WHITE);
+    DrawText(TextFormat("Level %d", GetCurrentLevel()), 10, 60, 40, GRAY);
     auto& player = scene::SceneManager::getInstance()->GetPlayer();
     auto& sheild = Resources::UIShield;
     float scale = 3.0f;
@@ -213,6 +293,18 @@ void Core::DrawGUI()
         Rectangle{ posLife.x, posLife.y,
                 frameRecLife.width * scale, frameRecLife.height * scale
         }, Vector2{ 0, 0 }, 0.0f, WHITE);
+    Rectangle frameControl = { 0.0f, 0.0f, (float)Resources::UIControl.width, (float)Resources::UIControl.height };
+    if (isTouch())
+    {
+        if (isDrag && currentGesture == GESTURE_DRAG)
+        {
+            DrawTexturePro(Resources::UIControl, frameControl,
+                Rectangle{ touchPosition.x - Resources::UIControl.width * scale / 2.0f,
+                touchPosition.y - Resources::UIControl.height * scale / 2.0f,
+                        Resources::UIControl.width * scale, Resources::UIControl.height * scale
+                }, Vector2{ 0, 0 }, 0.0f, WHITE);
+        }
+    }
 }
 
 void Core::DrawLevelChangeCountdown()

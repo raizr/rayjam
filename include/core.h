@@ -22,7 +22,7 @@ namespace core
 
     static constexpr int screenWidth = 1280;
     static constexpr int screenHeight = 720;
-    static constexpr int scaleGameScreen = 3;
+    static constexpr int scaleGameScreen = 4;
     static constexpr int gameScreenWidth = 240 * scaleGameScreen;
     static constexpr int gameScreenHeight = 135 * scaleGameScreen;
     constexpr int FIXED_FRAME_RATE = 60;
@@ -48,6 +48,10 @@ namespace core
 
         static void CenterWindow();
         int GetCurrentLevel();
+        bool isTouch();
+        bool isDragGesture();
+        Vector2 getDragVector();
+        bool GetTouchTap();
     private:
         Core() = default;
         ~Core();
@@ -60,6 +64,19 @@ namespace core
         float levelChangeCountdown = 0;
         int uiShieldCurrentFrame = 0;
         int uiLifeCurrentFrame = 0;
+
+        int currentGesture = GESTURE_NONE;
+        int lastGesture = GESTURE_NONE;
+        Vector2 touchPosition = { 0, 0 };
+        Vector2 touchRightPosition = { 0, 0 };
+        Vector2 holdLast = { 0, 0 };
+        Vector2 rightTap = { 0, 0 };
+        Vector2 dragCurrent = { 0, 0 };
+        Rectangle touchArea = { 0.0f, 0.0f, screenWidth / 2.0f, screenHeight};
+        Rectangle touchRight = { screenWidth / 2.0f, 0.0f, screenWidth / 2.0f, screenHeight};
+        Rectangle pauseBound;
+        bool isDrag = false;
+        bool touchTap = false;
     };
     
 }

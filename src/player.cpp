@@ -40,11 +40,15 @@ void Player::Update()
         shield = maxShield;
     }
 
-    bool wantThrust = IsKeyDown(KEY_W) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+    bool wantThrust = IsKeyDown(KEY_W);
     bool wantBoost = (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) /*&& wantThrust*/;
-    bool wantShoot = IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+    bool wantShoot = IsKeyDown(KEY_SPACE)
+        || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !core::Core::getInstance()->isTouch());
     bool wantBreak = IsKeyDown(KEY_S);
-
+    if (core::Core::getInstance()->isTouch())
+    {
+        wantShoot = core::Core::getInstance()->GetTouchTap();
+    }
     axisThrust = 0.0f;
     if (wantThrust)
     {
@@ -57,9 +61,14 @@ void Player::Update()
         wantShoot = wantShoot || GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) > 0.125f;
         wantBreak = wantBreak || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
     }
+    else if (core::Core::getInstance()->isTouch())
+    {
+        axisThrust = Clamp(core::Core::getInstance()->getDragVector().y + 1.0f, 0.0f, 1.0f);
+        wantBreak = core::Core::getInstance()->getDragVector().y < 0.0f;
+    }
 
-    // handle rotation by mouse,keyboard, or gamepad
-    if (IsCursorOnScreen() && Vector2LengthSqr(GetMouseDelta()) > 0)
+    if (!core::Core::getInstance()->isTouch()
+        && IsCursorOnScreen() && Vector2LengthSqr(GetMouseDelta()) > 0)
     {
         Vector2 mouseVec = Vector2Normalize(Vector2Subtract(GetMousePosition(),
             Vector2Scale({ (float)GetScreenWidth() , (float)GetScreenHeight() }, 0.5f)));
@@ -87,6 +96,17 @@ void Player::Update()
         else if (IsGamepadAvailable(0))
         {
             input = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
+        }
+        else if (core::Core::getInstance()->isTouch())
+        {
+            if (core::Core::getInstance()->isDragGesture())
+            {
+                input = Clamp(-core::Core::getInstance()->getDragVector().x/3, -1.0, 1.0f);
+            }
+            else
+            {
+                input = 0;
+            }
         }
         orientation += input * rotation;
     }

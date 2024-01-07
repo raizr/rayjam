@@ -77,6 +77,8 @@ struct Resources
         }
         UIShield = LoadTexture((dir + "/sprites/shield-ui.png").c_str());
         UILife = LoadTexture((dir + "/sprites/life-ui.png").c_str());
+        UIControl = LoadTexture((dir + "/sprites/stick.png").c_str());
+        UIPause = LoadTexture((dir + "/sprites/pause.png").c_str());
     }
     inline static Texture ship;
     inline static std::array<Texture,5> shipEnemy;
@@ -88,4 +90,6 @@ struct Resources
     inline static Texture asteroid;
     inline static Texture UIShield;
     inline static Texture UILife;
+    inline static Texture UIControl;
+    inline static Texture UIPause;
 };

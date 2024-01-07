@@ -1,6 +1,5 @@
 #pragma once
 #include "enemy.h"
-#include "mazegen.h"
 #include "raylib.h"
 #include "player.h"
 
@@ -34,7 +33,6 @@ namespace scene
         Shader starfield = { };
         float seconds = {};
         int secondsLoc = {};
-        mazegen::PointSet constraints;
         int TILE_SIZE = 2000;
         int activeEnemiesCount = 0;
         bool levelClear = false;
