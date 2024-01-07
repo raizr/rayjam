@@ -70,6 +70,7 @@ void SceneManager::Update()
     Pool::UpdateExplosions();
     player.Update();
     Pool::UpdateAsteroids();
+    Pool::UpdatePowerup();
     activeEnemiesCount = 0;
     for (auto& enemy : Pool::enemies)
     {
@@ -106,6 +107,7 @@ void SceneManager::Draw()
         EndShaderMode();
         Pool::DrawMissle();
         Pool::DrawAsteroids();
+        Pool::DrawPowerUp();
         Pool::DrawEnemies();
         Pool::DrawExplosions();
         player.Draw();
@@ -118,6 +120,7 @@ void SceneManager::Reset()
     Pool::misslePool.clear();
     Pool::explosions.clear();
     Pool::asteroids.clear();
+    Pool::powerups.clear();
 }
 
 Player& SceneManager::GetPlayer()

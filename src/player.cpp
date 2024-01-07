@@ -17,23 +17,24 @@ void Player::Init()
     life = 5;
     radius = 40.0f;
     isAlive = true;
+    shotSpeedMultiplyer = 1;
+    shield = maxShield;
+    power = maxPower;
     std::string dir = GetWorkingDirectory();
     shipTexture = Resources::ship;
     thrust = Resources::thrust;
+    shieldTexture = Resources::shieldTexture;
     thrustLoop = LoadAsepriteTag(thrust, "loop");
     position = Vector2Zero();
 }
 
 void Player::Update()
 {
-    shieldHitLifetime -= core::Core::getInstance()->GetDeltaTime();
-
     if (!isAlive)
     {
         return;
     }
     UpdateAsepriteTag(&thrustLoop);
-    shield += core::Core::getInstance()->GetDeltaTime() * shieldRecharge;
     if (shield > maxShield)
     {
         shield = maxShield;
@@ -216,6 +217,12 @@ void Player::Draw()
         }
         DrawNode(shipTexture, position, orientation, { -1.0f, -1.0f }, WHITE, { 0.0f, 0.0f });
     }
+    if (shield > 0)
+    {
+        BeginBlendMode(BLEND_ADDITIVE);
+        DrawNode(shieldTexture, position, orientation, Vector2{ -1.0f, -1.0f  }, WHITE, { 0.0f, 0.0f });
+        EndBlendMode();
+    }
 }
 
 const Vector2& Player::GetPosition() const
@@ -242,6 +249,11 @@ bool Player::Collide(Missle& other)
 void Player::OnHit()
 {
     Explosion::Create(position, 1);
+    if (shield > 0)
+    {
+        shield--;
+        return;
+    }
     life--;
     if (life <= 0)
     {

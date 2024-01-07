@@ -56,6 +56,7 @@ bool Asteroid::Collide(Node& other)
     if (hit)
     {
         Explosion::Create(position, 2);
+        PowerUp::Create(position);
         isAlive = false;
     }
     return hit;

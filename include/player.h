@@ -5,8 +5,6 @@
 #include "missle.h"
 #include "raylib-aseprite.h"
 
-static constexpr float NominalShield = 1000;
-static constexpr float NominalShieldRecharge = 2;
 static constexpr float NominalPower = 1000;
 static constexpr float NominalThrust = 400;
 static constexpr float NominalBoostMultiplyer = 3;
@@ -56,6 +54,7 @@ public:
     void OnHit();
 
     Texture shipTexture = {};
+    Texture shieldTexture = {};
 	Aseprite thrust = {};
 	AsepriteTag thrustLoop = {};
 	Color missleColor = RED;
@@ -66,7 +65,7 @@ public:
 
 	float shotSpeedMultiplyer = 1;
 
-	float maxShield = NominalShield;
+	float maxShield = 5;
 	float shield = maxShield;
 
 	float maxPower = NominalPower;
@@ -74,10 +73,7 @@ public:
 
 	float maxThrust = NominalThrust;
 	float boostMultiplyer = NominalBoostMultiplyer;
-
-	float shieldRecharge = NominalShieldRecharge;
-	float shieldHitAngle = 0;
-	float shieldHitLifetime = -1;
+	
 	float speed = {};
 	float axisThrust = 0.0f;
 	float baseReloadTime = 0.5f;

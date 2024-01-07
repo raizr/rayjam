@@ -5,9 +5,11 @@
 #include "enemy.h"
 #include "explosion.h"
 #include "missle.h"
+#include "powerup.h"
 #include "raymath.h"
 #include "resource.h"
 #include "scene_manager.h"
+#include <core.h>
 
 struct Pool
 {
@@ -49,6 +51,26 @@ struct Pool
             asteroids.push_back(asteroid);
             j = j + (PI / 16);
         }
+    }
+
+    static PowerUp* GetPowerUp()
+    {
+        PowerUp* slot = nullptr;
+        for (auto& powerup : powerups)
+        {
+            if (!powerup.isAlive)
+            {
+                slot = &powerup;
+                break;
+            }
+        }
+
+        if (!slot)
+        {
+            powerups.emplace_back(PowerUp());
+            slot = &powerups.back();
+        }
+        return slot;
     }
 
     static Missle* getMissle()
@@ -159,6 +181,16 @@ struct Pool
         }
     }
 
+    static void UpdatePowerup()
+    {
+        for (auto& powerup : powerups)
+        {
+            powerup.Update();
+            auto& player = scene::SceneManager::getInstance()->GetPlayer();
+            powerup.Collide(player);
+        }
+    }
+
     static void DrawMissle()
 	{
 		for (auto& missle : misslePool)
@@ -197,8 +229,17 @@ struct Pool
         }
     }
 
+    static void DrawPowerUp()
+    {
+        for (auto& powerup : powerups)
+        {
+            powerup.Draw();
+        }
+    }
+
     inline static std::vector<Missle> misslePool;
     inline static std::vector<Enemy> enemies;
     inline static std::vector<Explosion> explosions;
     inline static std::vector<Asteroid> asteroids;
+    inline static std::vector<PowerUp> powerups;
 };

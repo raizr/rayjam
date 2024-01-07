@@ -31,15 +31,12 @@ void Enemy::Init()
 
 void Enemy::Update()
 {
-    shieldHitLifetime -= core::Core::getInstance()->GetDeltaTime();
-
     if (!isAlive)
     {
         return;
     }
 
     UpdateAsepriteTag(&thrustLoop);
-    shield += core::Core::getInstance()->GetDeltaTime() * shieldRecharge;
     if (shield > maxShield)
     {
         shield = maxShield;

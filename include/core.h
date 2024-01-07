@@ -22,7 +22,7 @@ namespace core
 
     static constexpr int screenWidth = 1280;
     static constexpr int screenHeight = 720;
-    static constexpr int scaleGameScreen = 4;
+    static constexpr int scaleGameScreen = 3;
     static constexpr int gameScreenWidth = 240 * scaleGameScreen;
     static constexpr int gameScreenHeight = 135 * scaleGameScreen;
     constexpr int FIXED_FRAME_RATE = 60;
@@ -57,7 +57,6 @@ namespace core
         RenderTexture2D target;
         double time = 0;
         int level = 1;
-        size_t score = 0;
         float levelChangeCountdown = 0;
     };
     
