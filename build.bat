@@ -31,8 +31,8 @@ if %PLATFORM% == "win32" (
     cd build
     if not exist web mkdir web
     cd web
-    call C:\DATA\github\emsdk\emsdk_env.bat activate
-    emcmake cmake ../../ -DPLATFORM=Web -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-s USE_GLFW=3 -s ALLOW_MEMORY_GROWTH=1" -DCMAKE_EXECUTABLE_SUFFIX=".html"
+    call ..\..\emsdk\emsdk_env.bat activate
+    emcmake cmake ../../ -DPLATFORM=Web -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-s USE_GLFW=3 -s ALLOW_MEMORY_GROWTH=1" -DCMAKE_EXECUTABLE_SUFFIX=".html"
     cmake --build .
     cd %WORKINGDIR%
 )
