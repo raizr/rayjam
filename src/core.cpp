@@ -166,15 +166,28 @@ void Core::Update()
     {
         time += GetDeltaTime();
     }
-
+    if (gameState == GameState::Tutorial)
+    {
+        if (AcceptPressed())
+        {
+            tutorial = true;
+            gameState = GameState::Playing;
+        }
+    }
     if (gameState == GameState::Paused)
     {
         if (AcceptPressed())
         {
-            gameState = GameState::Playing;
+            if (!tutorial)
+            {
+                gameState = GameState::Tutorial;
+            }
+            else
+            {
+                gameState = GameState::Playing;
+            }
         }
     }
-
     if (gameState == GameState::Lose)
     {
         if (AcceptPressed())
@@ -251,6 +264,18 @@ void Core::Update()
     {
         DrawMenu();
     }
+    if (gameState == GameState::Tutorial)
+    {
+        auto& tutor = Resources::UITutorial;
+        Rectangle frameRec = { 0.0f, 0.0f, (float)tutor.width, (float)tutor.height };
+        frameRec.x = (float)uiLifeCurrentFrame * tutor.width;
+        Vector2 pos = { GetScreenWidth() / 2.0f - frameRec.width / 2.0f * 3.0f,
+                            GetScreenHeight() / 2.0f - frameRec.height / 2.0f * 3.0f };
+        DrawTexturePro(tutor, frameRec,
+            Rectangle{ pos.x, pos.y,
+                    frameRec.width * 3.0f, frameRec.height * 3.0f
+            }, Vector2{ 0, 0 }, 0.0f, WHITE);
+    }
     if (gameState == GameState::Lose)
     {
         DrawLoseMenu();
@@ -265,7 +290,7 @@ void Core::Update()
 
 void Core::DrawMenu()
 {
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, 128 });
+    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, 255 });
     DrawCenteredText("Space Asterogue", 60);
     DrawCenteredText("press to start",30, 0.6f, 0.5f);
 }

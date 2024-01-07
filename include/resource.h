@@ -80,7 +80,7 @@ struct Resources
         UILife = LoadTexture((dir + "/sprites/life-ui.png").c_str());
         UIControl = LoadTexture((dir + "/sprites/stick.png").c_str());
         UIPause = LoadTexture((dir + "/sprites/pause.png").c_str());
-
+        UITutorial = LoadTexture((dir + "/sprites/tutorial.png").c_str());
         InitAudioDevice();
         for (int i = 0; i < 3; i++)
         {
@@ -109,6 +109,7 @@ struct Resources
     inline static Texture UILife;
     inline static Texture UIControl;
     inline static Texture UIPause;
+    inline static Texture UITutorial;
     inline static std::vector<Sound> effects;
     inline static std::array<size_t, 3> explosion;
     inline static std::array<size_t, 3> shoot;
