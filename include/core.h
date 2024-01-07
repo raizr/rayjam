@@ -16,6 +16,7 @@ namespace core
         None,
         Playing,
         Paused,
+        ChangingLevel,
         Lose
     };
 
@@ -37,6 +38,8 @@ namespace core
 
         void Update();
         void DrawMenu();
+        void DrawGUI();
+        void DrawLevelChangeCountdown();
         void DrawLoseMenu();
         void OnLose();
         bool AcceptPressed();
@@ -44,7 +47,7 @@ namespace core
         bool IsPaused() { return gameState == GameState::Paused; }
 
         static void CenterWindow();
-
+        int GetCurrentLevel();
     private:
         Core() = default;
         ~Core();
@@ -53,7 +56,9 @@ namespace core
         GameState gameState = GameState::Paused;
         RenderTexture2D target;
         double time = 0;
-
+        int level = 1;
+        size_t score = 0;
+        float levelChangeCountdown = 0;
     };
     
 }

@@ -21,6 +21,7 @@ void Player::Init()
     shipTexture = Resources::ship;
     thrust = Resources::thrust;
     thrustLoop = LoadAsepriteTag(thrust, "loop");
+    position = Vector2Zero();
 }
 
 void Player::Update()
@@ -182,28 +183,8 @@ void Player::Update()
 
         Vector2 shotPos = Vector2Add(position, Vector2Scale(shipVector, radius * 1.0f));
 
-        Vector2 shotVel = Vector2Add(velocity, Vector2Scale(shipVector, 1500));
-        Missle::Create(shotPos, shotVel, orientation, type == NodeType::PLAYER);
-        //Sounds::PlaySoundEffect(Sounds::Shot);
-    }
-    Vector2 point1;
-    Vector2 point2;
-    bool collision = false;
-    Vector2 ray = Vector2Add(position, Vector2Scale(shipVector, 100.0f));
-    Vector2 collisionPoint;
-    auto& bounds = scene::SceneManager::getInstance()->GetMazeBounds();
-    for (auto& bound : bounds)
-    {
-        point1 = { bound.x, bound.y };
-        point2 = { bound.width, bound.height };
-
-        collision = CheckCollisionLines(point1, point2, position, ray, &collisionPoint);
-        if (collision)
-        {
-            velocity.x = position.x - collisionPoint.x;
-            velocity.y = position.y - collisionPoint.y;
-            break;
-        }
+        Vector2 shotVel = Vector2Add({0.1f, 0.1f}, Vector2Scale(shipVector, 1500));
+        Missle::Create(shotPos, shotVel, orientation, type == NodeType::PLAYER, missleColor);
     }
 }
 

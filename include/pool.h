@@ -11,51 +11,43 @@
 
 struct Pool
 {
-    static void createEnemies(int enemiesSize)
+    static void createEnemies()
     {
-        auto& bounds = scene::SceneManager::getInstance()->GetMazeBounds();
-        auto tileSize = scene::SceneManager::getInstance()->GetTileSize();
-        /*for (auto it = bounds.begin(); it != bounds.end(); ++it)
+        int size = 5 * core::Core::getInstance()->GetCurrentLevel();
+        double j = 0;
+        for (int i = 0; i < size; i++)
         {
-            auto& bound = *it;
-            for (auto i = 0; i < 4; i++)
-            {
-                auto enemy = Enemy();
-                enemy.Init();
-                enemy.position = {
-                    GetRandomValueF(bound.x + tileSize/2.f, bound.width + tileSize / 2.f),
-                    GetRandomValueF(bound.y + tileSize / 2.f, bound.height + tileSize / 2.f)
-                };
-                enemies.emplace_back(std::move(enemy));
-            }
-        }*/
+            Enemy enemy;
+            enemy.Init();
+
+            enemy.position = {
+                sinf(j) * GetRandomValue(500, 10000),
+                cosf(j) * GetRandomValue(500, 10000)
+            };
+            enemies.push_back(enemy);
+            j = j + (PI / 16);
+        }
     }
 
     static void createAsteroids()
     {
-        for (auto& bound : scene::SceneManager::getInstance()->GetMazeBounds())
+        double j = 0;
+        for (int i = 0; i < 500; i++)
         {
-            for (int i = 0; i < 100; i++)
-            {
-                Asteroid asteroid;
-                asteroid.position = {
-                    GetRandomValueF(bound.x, bound.width),
-                    GetRandomValueF(bound.y, bound.height)
-                };
-                asteroid.scale = GetRandomValueF(0.5f, 1.5f);
-                asteroid.radius *= asteroid.scale;
-                if (bound.x != bound.width)
-                {
-                    asteroid.velocity.x = GetRandomValueF(-20.0f, 20.f);
-                    asteroid.boundary = { bound.x, bound.width };
-                }
-                if (bound.y != bound.height)
-                {
-                    asteroid.velocity.y = GetRandomValueF(-20.0f, 20.f);
-                    asteroid.boundary = { bound.y, bound.height };
-                }
-                asteroids.push_back(asteroid);
-            }
+            Asteroid asteroid;
+            asteroid.position = {
+                sinf(j) * GetRandomValue(500, 10000),
+                cosf(j) * GetRandomValue(500, 10000)
+            };
+            asteroid.scale = GetRandomValueF(0.5f, 1.5f);
+            asteroid.radius *= asteroid.scale;
+            asteroid.rotationalVelocity = GetRandomValueF(0.4f, 0.8f);
+            asteroid.velocity = {
+                GetRandomValueF(10.0f, 50.f),
+                GetRandomValueF(10.0f, 50.f)
+            };
+            asteroids.push_back(asteroid);
+            j = j + (PI / 16);
         }
     }
 
@@ -130,6 +122,10 @@ struct Pool
 
             for (auto& asteroid : asteroids)
             {
+                if (!asteroid.isAlive)
+                {
+                    continue;
+                }
                 if (asteroid.Collide(missle))
                 {
                     missle.isAlive = false;
@@ -144,7 +140,6 @@ struct Pool
         for (auto& enemy : enemies)
         {
             enemy.Update();
-            scene::SceneManager::getInstance()->CheckMazeBound(enemy);
         }
     }
 

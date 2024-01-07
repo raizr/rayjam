@@ -36,73 +36,6 @@ SceneManager::SceneManager()
     background = LoadTexture((dir + "/sprites/background.png"s).c_str());
     starfield = LoadShader(nullptr, TextFormat((dir + "/shaders/starfield%i.fs"s).c_str(), GLSL_VERSION));
     secondsLoc = GetShaderLocation(starfield, "seconds");
-    const int HEIGHT = 20;
-    const int WIDTH = 20;
-
-    mazegen::Config cfg;
-    cfg.ROOM_BASE_NUMBER = 1;
-    cfg.ROOM_SIZE_MIN = 5;
-    cfg.ROOM_SIZE_MAX = 7;
-    cfg.EXTRA_CONNECTION_CHANCE = 0.0;
-    cfg.WIGGLE_CHANCE = 0.5;
-    cfg.DEADEND_CHANCE = 0.5;
-    cfg.RECONNECT_DEADENDS_CHANCE = 0.5;
-    cfg.CONSTRAIN_HALL_ONLY = false;
-
-    constraints = { {1, 1}, {WIDTH - 2, HEIGHT - 2} };
-    
-    maze.generate(WIDTH, HEIGHT, cfg, constraints);
-    
-    for (int y = 0; y < maze.maze_height(); y++) {
-        for (int x = 0; x < maze.maze_width(); x++) {
-            int C = maze.region_at(x, y);
-            int L = maze.region_at(x - 1, y);
-            int R = maze.region_at(x + 1, y);
-            int T = maze.region_at(x, y - 1);
-            int B = maze.region_at(x, y + 1);
-            if (C != mazegen::NOTHING_ID)
-            {
-                if (T == mazegen::NOTHING_ID)
-                {
-                    auto rect = Rectangle{ (float)x * TILE_SIZE, (float)y * TILE_SIZE,
-                                        (float)(x + 1) * TILE_SIZE, (float)y * TILE_SIZE };
-                    mazeBounds.push_back(rect);
-                }
-                if (L == mazegen::NOTHING_ID)
-                {
-                    auto rect = Rectangle{ (float)x * TILE_SIZE, (float)y * TILE_SIZE,
-                        (float)x * TILE_SIZE, (float)(y + 1) * TILE_SIZE };
-                    mazeBounds.push_back(rect);
-                }
-                if (R == mazegen::NOTHING_ID)
-                {
-                    auto rect = Rectangle{ (float)(x + 1) * TILE_SIZE, (float)y * TILE_SIZE,
-                        (float)(x + 1) * TILE_SIZE, (float)(y + 1) * TILE_SIZE };
-                    mazeBounds.push_back(rect);
-                }
-                if (B == mazegen::NOTHING_ID)
-                {
-                    mazeBounds.push_back(Rectangle{ (float)x * TILE_SIZE, (float)(y + 1) * TILE_SIZE,
-                        (float)(x + 1) * TILE_SIZE, (float)(y + 1) * TILE_SIZE });
-                }
-                if (T == mazegen::NOTHING_ID && B == mazegen::NOTHING_ID)
-                {
-                    auto rect = Rectangle{ (float)x * TILE_SIZE, (float)y * TILE_SIZE,
-                                        (float)(x + 1) * TILE_SIZE, (float)y * TILE_SIZE };
-                    for (auto i = 0; i < 4; i++)
-                    {
-                        auto enemy = Enemy();
-                        enemy.Init();
-                        enemy.position = {
-                            GetRandomValueF(rect.x + TILE_SIZE / 2.f, rect.width + TILE_SIZE / 2.f),
-                            GetRandomValueF(rect.y + TILE_SIZE / 2.f, rect.height + TILE_SIZE / 2.f)
-                        };
-                        Pool::enemies.push_back(enemy);
-                    }
-                }
-            }
-        }
-    }
 }
 
 Rectangle& SceneManager::ScreenInWorld()
@@ -110,70 +43,42 @@ Rectangle& SceneManager::ScreenInWorld()
     return screenInWorld;
 }
 
+bool SceneManager::IsLevelClear()
+{
+    return levelClear;
+}
+
+void SceneManager::NextLevel()
+{
+    Reset();
+    Load();
+}
+
 void SceneManager::Load()
 {
     player.Init();
-    player.position = {
-        mazeBounds[0].x + TILE_SIZE / 2.f,
-        mazeBounds[0].y + TILE_SIZE / 2.f
-    };
-    Pool::createEnemies(200);
     Pool::createAsteroids();
+    Pool::createEnemies();
 }
 
 void SceneManager::Update()
 {
     seconds += GetFrameTime();
-    if (frame > 120)
-    {
-        frame = 0;
-    }
-    frame++;
     SetShaderValue(starfield, secondsLoc, &seconds, SHADER_UNIFORM_FLOAT);
     Pool::UpdateMissle();
     Pool::UpdateEnemies();
     Pool::UpdateExplosions();
     player.Update();
-    if (frame % 2 == 0)
+    Pool::UpdateAsteroids();
+    activeEnemiesCount = 0;
+    for (auto& enemy : Pool::enemies)
     {
-        Pool::UpdateAsteroids();
-    }
-}
-
-void SceneManager::DrawMaze()
-{
-    for (int y = 0; y < maze.maze_height(); y++) {
-        for (int x = 0; x < maze.maze_width(); x++) {
-            int C = maze.region_at(x, y);
-            int L = maze.region_at(x - 1, y);
-            int R = maze.region_at(x + 1, y);
-            int T = maze.region_at(x, y - 1);
-            int B = maze.region_at(x, y + 1);
-            if (C != mazegen::NOTHING_ID)
-            {
-                if (T == mazegen::NOTHING_ID)
-                {
-                    DrawLine(x * TILE_SIZE, y * TILE_SIZE,
-                        (x + 1) * TILE_SIZE, y * TILE_SIZE, BLUE);
-                }
-                if (L == mazegen::NOTHING_ID)
-                {
-                    DrawLine(x * TILE_SIZE, y * TILE_SIZE,
-                        x * TILE_SIZE, (y + 1) * TILE_SIZE, GREEN);
-                }
-                if (R == mazegen::NOTHING_ID)
-                {
-                    DrawLine((x + 1) * TILE_SIZE, y * TILE_SIZE,
-                        (x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE, WHITE);
-                }
-                if (B == mazegen::NOTHING_ID)
-                {
-                    DrawLine(x * TILE_SIZE, (y + 1) * TILE_SIZE,
-                        (x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE, RED);
-                }
-            }
+        if (enemy.isAlive)
+        {
+            activeEnemiesCount++;
         }
     }
+    levelClear = activeEnemiesCount == 0;
 }
 
 void SceneManager::Draw()
@@ -199,14 +104,12 @@ void SceneManager::Draw()
         BeginShaderMode(starfield);
             DrawTexturePro(background, sourceRect, screenInWorld, Vector2Zero(), 0, WHITE);
         EndShaderMode();
-        //DrawMaze();
         Pool::DrawMissle();
         Pool::DrawAsteroids();
         Pool::DrawEnemies();
         Pool::DrawExplosions();
         player.Draw();
     EndMode2D();
-    DrawText(TextFormat("pos: %f %f %f", player.GetPosition().x, player.GetPosition().y, player.axisThrust), 10, 10, 20, WHITE);
 }
 
 void SceneManager::Reset()
@@ -217,49 +120,9 @@ void SceneManager::Reset()
     Pool::asteroids.clear();
 }
 
-bool SceneManager::CheckMazeBound(Node& node)
-{
-    if (!node.isAlive)
-    {
-        return false;
-    }
-    bool collision = false;
-    auto point = node.position;
-    Vector2 point1;
-    Vector2 point2;
-    for (int i = 0; i < mazeBounds.size() - 1; i++)
-    {
-        point1 = { mazeBounds[i].x, mazeBounds[i].y };
-        point2 = { mazeBounds[i].width, mazeBounds[i].height };
-
-        collision = CheckCollisionPointLine(point, point1, point2, 50);
-        if (collision)
-            break;
-    }
-    
-    if (collision)
-    {
-        Explosion::Create(point, 1);
-    }
-
-    return collision;
-}
-
-
-
 Player& SceneManager::GetPlayer()
 {
     return player;
-}
-
-const mazegen::Generator& SceneManager::GetMaze()
-{
-    return maze;
-}
-
-const std::vector<Rectangle>& SceneManager::GetMazeBounds()
-{
-    return mazeBounds;
 }
 
 const int SceneManager::GetTileSize()

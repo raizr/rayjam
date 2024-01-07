@@ -52,6 +52,11 @@ void Core::CenterWindow()
     SetWindowPosition(x, y);
 }
 
+int Core::GetCurrentLevel()
+{
+    return level;
+}
+
 Core::~Core()
 {
     UnloadRenderTexture(target);
@@ -117,8 +122,27 @@ void Core::Update()
         {
             gameState = GameState::Paused;
         }
+        if (scene::SceneManager::getInstance()->IsLevelClear())
+        {
+            gameState = GameState::ChangingLevel;
+            levelChangeCountdown = 2;
+            level += 1;
+        }
+    }
+    if (gameState == GameState::ChangingLevel)
+    {
+        levelChangeCountdown -= GetDeltaTime();
+        if (levelChangeCountdown < 0)
+        {
+            gameState = GameState::Playing;
+            scene::SceneManager::getInstance()->NextLevel();
+        }
     }
     if (gameState == GameState::Playing)
+    {
+        scene::SceneManager::getInstance()->Update();
+    }
+    if (gameState == GameState::ChangingLevel)
     {
         scene::SceneManager::getInstance()->Update();
     }
@@ -135,6 +159,11 @@ void Core::Update()
                     (GetScreenHeight() - ((float)gameScreenHeight * scale)) * 0.5f,
                     (float)gameScreenWidth* scale, (float)gameScreenHeight* scale
         }, Vector2 { 0, 0 }, 0.0f, WHITE);
+        DrawGUI();
+    if (gameState == GameState::ChangingLevel)
+    {
+        DrawLevelChangeCountdown();
+    }
     if (gameState == GameState::Paused)
     {
         DrawMenu();
@@ -142,6 +171,7 @@ void Core::Update()
     if (gameState == GameState::Lose)
     {
         DrawLoseMenu();
+        level = 1;
     }
     if (IsCursorOnScreen())
     {
@@ -155,6 +185,16 @@ void Core::DrawMenu()
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, 128 });
     DrawCenteredText("Space Asterogue", 60);
     DrawCenteredText("press to start",30, 0.6f, 0.5f);
+}
+
+void Core::DrawGUI()
+{
+    DrawText(TextFormat("Level %d", GetCurrentLevel()), 10, 10, 40, GRAY);
+}
+
+void Core::DrawLevelChangeCountdown()
+{
+    DrawCenteredText(TextFormat("Next Level in %0.0f", (float)std::ceil(levelChangeCountdown)), 20, 0.25f);
 }
 
 void Core::DrawLoseMenu()

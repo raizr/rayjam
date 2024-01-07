@@ -7,7 +7,7 @@ public:
     Asteroid();
     void Update() override;
     void Draw() override;
-    void CollideWithShip(Node& ship);
+    bool Collide(Node& other) override;
     Texture texture = {};
     float scale = 1.0f;
 };

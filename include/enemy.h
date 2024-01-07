@@ -22,10 +22,20 @@ public:
     void Update() override;
     void Draw() override;
     bool Collide(Missle& missle) override;
-    Timer timer;
-    Timer obstacleTimer;
+    Timer timer = {};
+    Timer obstacleTimer = {};
 
-    float enemyRadius = 500.0f;
+    float enemyRadius = 10000.0f;
     bool isFound = false;
     Vector2 enemyDirection = {};
+    bool isMooving = false;
+    std::array<Color, 7> missleColors = {
+        BLUE,
+        GREEN,
+        YELLOW,
+        ORANGE,
+        GOLD,
+        PINK,
+        MAROON
+    };
 };

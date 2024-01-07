@@ -58,6 +58,7 @@ public:
     Texture shipTexture = {};
 	Aseprite thrust = {};
 	AsepriteTag thrustLoop = {};
+	Color missleColor = RED;
 	float reload = 0;
 
 	bool isThrusting = false;

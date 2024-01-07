@@ -58,7 +58,7 @@ struct Resources
     {
         //using std::string_literals::operator""s;
         std::string dir = GetWorkingDirectory();
-        ship = LoadTexture((dir + "/sprites/ship2.png").c_str());
+        ship = LoadTexture((dir + "/sprites/ship-player.png").c_str());
         missle = LoadTexture((dir + "/sprites/missle.png").c_str());
         thrust = LoadAseprite((dir + "/sprites/thrust.aseprite").c_str());
         animExplosionSprite = {
@@ -66,8 +66,13 @@ struct Resources
             LoadAseprite((dir + "/sprites/explosion-a.aseprite").c_str())
         };
         asteroid = LoadTexture((dir + "/sprites/asteroid.png").c_str());
+        for (int i = 0; i < 5; i++)
+        {
+            shipEnemy[i] = LoadTexture((dir + TextFormat("/sprites/ship-enemy%d.png", i + 1)).c_str());
+        }
     }
     inline static Texture ship;
+    inline static std::array<Texture,5> shipEnemy;
     inline static Aseprite thrust;
     inline static Texture missle;
     inline static std::array<Aseprite, 2> animExplosionSprite;

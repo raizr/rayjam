@@ -3,6 +3,7 @@
 #include "core.h"
 #include "explosion.h"
 #include "missle.h"
+#include "pool.h"
 #include "raymath.h"
 #include "resource.h"
 #include "scene_manager.h"
@@ -15,18 +16,17 @@ void Enemy::Init()
 {
     type = NodeType::ENEMY;
     std::string dir = GetWorkingDirectory();
-    shipTexture = Resources::ship;
+    shipTexture = Resources::shipEnemy[GetRandomValue(0, Resources::shipEnemy.size() - 1)];
     thrust = Resources::thrust;
     thrustLoop = LoadAsepriteTag(thrust, "loop");
+    auto curLevel = core::Core::getInstance()->GetCurrentLevel();
     radius = 40.0f;
-    baseReloadTime = 1.0f;
-    axisThrust = GetRandomValueF(0.5f, 0.8f);
-    /*position = {
-        GetRandomValueF(-10000.0f, 10000.f),
-        GetRandomValueF(-10000.0f, 10000.f)
-    };*/
-    StartTimer(&timer, 5.0);
+    baseReloadTime = 5.0f - 0.1f * curLevel;
+    life = GetRandomValue(1 + curLevel, 3 + curLevel);
+    axisThrust = GetRandomValueF(0.3f + 0.05f * curLevel, 0.5f + 0.05f * curLevel);
+    StartTimer(&timer, 2.0);
     orientation = GetRandomValueF(0.0f, 360.f);
+    missleColor = missleColors[GetRandomValue(0, missleColors.size() - 1)];
 }
 
 void Enemy::Update()
@@ -37,6 +37,7 @@ void Enemy::Update()
     {
         return;
     }
+
     UpdateAsepriteTag(&thrustLoop);
     shield += core::Core::getInstance()->GetDeltaTime() * shieldRecharge;
     if (shield > maxShield)
@@ -46,23 +47,42 @@ void Enemy::Update()
     
     if (!isFound)
     {
-        if (TimerDone(timer))
+        if (TimerDone(timer) && !isMooving)
         {
             orientation = GetRandomValueF(orientation - 10.f, orientation + 10.f);
-            StartTimer(&timer, 5.0);
+            StartTimer(&timer, 1.0);
         }
     }
     bool wantBoost = false;
     bool wantShoot = false;
     bool wantBreak = false;
     auto& player = scene::SceneManager::getInstance()->GetPlayer();
-    //isFound = CheckCollisionCircles(position, enemyRadius, player.position, player.radius) && player.isAlive;
+    isFound = CheckCollisionCircles(position, enemyRadius, player.position, player.radius) && player.isAlive;
     if (isFound)
     {
         orientation = -Vector2LineAngle((position), (player.position)) * RAD2DEG + 90;
         auto distance = Vector2Distance(position, player.position);
-        axisThrust = distance / enemyRadius;
-        wantShoot = true;
+        if (distance <= 100)
+        {
+            axisThrust = 0.0f;
+            velocity = {
+                0.1f + distance / 100.f,
+                0.1f + distance / 100.f
+            };
+        }
+        else
+        {
+            auto curLevel = core::Core::getInstance()->GetCurrentLevel();
+            axisThrust = GetRandomValueF(0.3f + 0.05f * curLevel, 0.5f + 0.05f * curLevel);
+        }
+        if (CheckCollisionCircles(position, 500, player.position, player.radius))
+        {
+            wantShoot = true;
+        }
+    }
+    else
+    {
+        position = Vector2Add(position, Vector2Negate(player.position));
     }
     
     while (orientation > 180)
@@ -142,41 +162,20 @@ void Enemy::Update()
         velocity = Vector2Scale(normVel, maxSpeed);
     }
     position = Vector2Add(position, Vector2Scale(velocity, core::Core::getInstance()->GetDeltaTime()));
-
     if (wantShoot && reload <= 0)
     {
         reload = baseReloadTime;
         Vector2 shotPos = Vector2Add(position, Vector2Scale(shipVector, radius * 1.0f));
         Vector2 shotVel = Vector2Add(velocity, Vector2Scale(shipVector, 1500));
-        Missle::Create(shotPos, shotVel, orientation);
-        //Sounds::PlaySoundEffect(Sounds::Shot);
-    }
-    Vector2 point1;
-    Vector2 point2;
-    auto& bounds = scene::SceneManager::getInstance()->GetMazeBounds();
-    bool collision = false;
-    Vector2 ray = Vector2Add(position, Vector2Scale(shipVector, 100.0f));
-    Vector2 collisionPoint;
-    for (auto& bound : bounds)
-    {
-        point1 = { bound.x, bound.y };
-        point2 = { bound.width, bound.height };
-
-        collision = CheckCollisionLines(point1, point2, position, ray, &collisionPoint);
-        if (collision)
-        {
-            velocity.x = position.x - collisionPoint.x;
-            velocity.y = position.y - collisionPoint.y;
-            orientation = -Vector2LineAngle((collisionPoint), (position)) * RAD2DEG + 90;
-            break;
-        }
+        Missle::Create(shotPos, shotVel, orientation, false, missleColor);
     }
 }
 
 void Enemy::Draw()
 {
     Player::Draw();
-
+    /*Vector2 ray = Vector2Add(position, Vector2Scale(shipVector, 100.0f));
+    DrawLineV(position, ray, RED);*/
 }
 
 bool Enemy::Collide(Missle& other)

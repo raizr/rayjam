@@ -7,7 +7,7 @@ public:
 	Missle();
 	void Draw() override;
 	void Update() override;
-	static void Create(const Vector2& pos, const Vector2& velocity, float orientation, bool byPlayer = false);
+	static void Create(const Vector2& pos, const Vector2& velocity, float orientation, bool byPlayer = false, Color color = RED);
 
 	Color tint = WHITE;
 	float lifeTime = 0;

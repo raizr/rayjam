@@ -15,8 +15,11 @@ Asteroid::Asteroid()
 
 void Asteroid::Update()
 {
+    if (!isAlive)
+    {
+        return;
+    }
     position = Vector2Add(position, Vector2Scale(velocity, core::Core::getInstance()->GetDeltaTime()));
-
     // rotate
     orientation += rotationalVelocity * core::Core::getInstance()->GetDeltaTime();
 
@@ -29,44 +32,31 @@ void Asteroid::Update()
         orientation += 360;
     }
     auto& player = scene::SceneManager::getInstance()->GetPlayer();
-    CollideWithShip(player);
-    if (velocity.x != 0.0f)
+    if (Collide(player))
     {
-        if (position.x >= boundary.y
-            || position.x <= boundary.x)
-        {
-            velocity.x = -velocity.x;
-        }
-    }
-    if (velocity.y != 0.0f)
-    {
-        if (position.y >= boundary.y
-            || position.y <= boundary.x)
-        {
-            velocity.y = -velocity.y;
-        }
-    }
-}
-
-void Asteroid::CollideWithShip(Node& ship)
-{
-    if (Collide(ship))
-    {
-        float dx = ship.position.x - position.x;
-        float dy = ship.position.y - position.y;
-        ship.velocity.x = dx;
-        ship.velocity.y = dy;
+        player.OnHit();
     }
 }
 
 void Asteroid::Draw()
 {
-    
-    /*DrawTextureEx(texture,
-        position,
-        orientation, scale, WHITE);*/
+    if (!isAlive)
+    {
+        return;
+    }
     Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
     Rectangle dest = { position.x, position.y, (float)texture.width * scale, (float)texture.height * scale };
     Vector2 center = { dest.width / 2.0f, dest.height / 2.0f };
     DrawTexturePro(texture, source, dest, center, orientation, WHITE);
+}
+
+bool Asteroid::Collide(Node& other)
+{
+    auto hit = Node::Collide(other);
+    if (hit)
+    {
+        Explosion::Create(position, 2);
+        isAlive = false;
+    }
+    return hit;
 }

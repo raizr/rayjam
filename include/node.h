@@ -42,7 +42,6 @@ public:
     Vector2 velocity = {};
     float rotationalVelocity = {};
     float radius = {};
-	Vector2 boundary;
 	bool isVisible = true;
 	bool isAlive = true;
 };

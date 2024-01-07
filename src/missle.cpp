@@ -11,7 +11,7 @@ constexpr float maxLife = 5;
 Missle::Missle()
 {
 	type = NodeType::MISSLE;
-	radius = 10.f;
+	radius = 20.f;
 	texture = Resources::missle;
 }
 
@@ -42,7 +42,7 @@ void Missle::Update()
 	Node::Update();
 }
 
-void Missle::Create(const Vector2& pos, const Vector2& velocity, float orientation, bool byPlayer)
+void Missle::Create(const Vector2& pos, const Vector2& velocity, float orientation, bool byPlayer, Color color)
 {
 	auto slot = Pool::getMissle();
 	slot->isAlive = true;
@@ -51,5 +51,5 @@ void Missle::Create(const Vector2& pos, const Vector2& velocity, float orientati
 	slot->orientation = orientation;
 	slot->lifeTime = maxLife;
 	slot->byPlayer = byPlayer;
-	slot->tint = RED;
+	slot->tint = color;
 }

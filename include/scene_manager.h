@@ -14,15 +14,14 @@ namespace scene
         static void cleanup();
         void Load();
         void Update();
-        void DrawMaze();
         void Draw();
         void Reset();
-        bool CheckMazeBound(Node& node);
         Player& GetPlayer();
-        const mazegen::Generator& GetMaze();
-        const std::vector<Rectangle>& GetMazeBounds();
         const int GetTileSize();
         Rectangle& ScreenInWorld();
+        bool IsLevelClear();
+        void NextLevel();
+
     private:
         SceneManager();
         ~SceneManager() = default;
@@ -34,12 +33,11 @@ namespace scene
         Player player;
         Shader starfield = { };
         float seconds = {};
-        int frame = 0;
         int secondsLoc = {};
-        mazegen::Generator maze;
         mazegen::PointSet constraints;
-        std::vector<Rectangle> mazeBounds;
         int TILE_SIZE = 2000;
+        int activeEnemiesCount = 0;
+        bool levelClear = false;
     };
 
 }
