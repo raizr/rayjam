@@ -75,6 +75,8 @@ struct Resources
         {
             powerUpSprites[i] = LoadTexture((dir + TextFormat("/sprites/power-up%d.png", i + 1)).c_str());
         }
+        UIShield = LoadTexture((dir + "/sprites/shield-ui.png").c_str());
+        UILife = LoadTexture((dir + "/sprites/life-ui.png").c_str());
     }
     inline static Texture ship;
     inline static std::array<Texture,5> shipEnemy;
@@ -84,4 +86,6 @@ struct Resources
     inline static std::array<Aseprite, 2> animExplosionSprite;
     inline static std::array<Texture, 3> powerUpSprites;
     inline static Texture asteroid;
+    inline static Texture UIShield;
+    inline static Texture UILife;
 };

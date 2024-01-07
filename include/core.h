@@ -58,6 +58,8 @@ namespace core
         double time = 0;
         int level = 1;
         float levelChangeCountdown = 0;
+        int uiShieldCurrentFrame = 0;
+        int uiLifeCurrentFrame = 0;
     };
     
 }

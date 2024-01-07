@@ -190,6 +190,29 @@ void Core::DrawMenu()
 void Core::DrawGUI()
 {
     DrawText(TextFormat("Level %d", GetCurrentLevel()), 10, 10, 40, GRAY);
+    auto& player = scene::SceneManager::getInstance()->GetPlayer();
+    auto& sheild = Resources::UIShield;
+    float scale = 3.0f;
+
+    uiShieldCurrentFrame = player.maxShield - player.shield;
+    Rectangle frameRec = { 0.0f, 0.0f, (float)sheild.width / 6, (float)sheild.height };
+    frameRec.x = (float)uiShieldCurrentFrame * (float)sheild.width / 6;
+    Vector2 pos = { GetScreenWidth() / 2.0f - frameRec.width / 2.0f, 10.f };
+    DrawTexturePro(sheild, frameRec,
+        Rectangle{ pos.x, pos.y,
+                frameRec.width* scale, frameRec.height* scale
+        }, Vector2{ 0, 0 }, 0.0f, WHITE);
+
+    auto& life = Resources::UILife;
+
+    uiLifeCurrentFrame = 5 - player.life;
+    Rectangle frameRecLife = { 0.0f, 0.0f, (float)life.width / 6, (float)life.height };
+    frameRecLife.x = (float)uiLifeCurrentFrame * (float)life.width / 6;
+    Vector2 posLife = { GetScreenWidth() / 2.0f - frameRec.width / 2.0f, 30.f };
+    DrawTexturePro(life, frameRecLife,
+        Rectangle{ posLife.x, posLife.y,
+                frameRecLife.width * scale, frameRecLife.height * scale
+        }, Vector2{ 0, 0 }, 0.0f, WHITE);
 }
 
 void Core::DrawLevelChangeCountdown()
