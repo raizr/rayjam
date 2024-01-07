@@ -51,6 +51,7 @@ inline bool SearchAndSetResourceDir(const char* folderName)
     return false;
 }
 
+inline size_t AddEffect(const char* name, float volume = 1.0f);
 
 struct Resources
 {
@@ -79,6 +80,22 @@ struct Resources
         UILife = LoadTexture((dir + "/sprites/life-ui.png").c_str());
         UIControl = LoadTexture((dir + "/sprites/stick.png").c_str());
         UIPause = LoadTexture((dir + "/sprites/pause.png").c_str());
+
+        InitAudioDevice();
+        for (int i = 0; i < 3; i++)
+        {
+            explosion[i] = AddEffect((dir + TextFormat("/sound/explosion_00%d.wav", i + 1)).c_str(), 0.1f);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            shoot[i] = AddEffect((dir + TextFormat("/sound/shoot%d.wav", i + 1)).c_str(), 0.1f);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            powerups[i] = AddEffect((dir + TextFormat("/sound/powerup%d.wav", i + 1)).c_str(), 0.1f);
+        }
+        music = LoadMusicStream((dir + std::string("/sound/track.ogg")).c_str());
+        music.looping = true;
     }
     inline static Texture ship;
     inline static std::array<Texture,5> shipEnemy;
@@ -92,4 +109,23 @@ struct Resources
     inline static Texture UILife;
     inline static Texture UIControl;
     inline static Texture UIPause;
+    inline static std::vector<Sound> effects;
+    inline static std::array<size_t, 3> explosion;
+    inline static std::array<size_t, 3> shoot;
+    inline static std::array<size_t, 3> powerups;
+    inline static Music music;
 };
+
+inline size_t AddEffect(const char* name, float volume)
+{
+    auto sound = LoadSound(name);
+    SetSoundVolume(sound, volume);
+    Resources::effects.emplace_back(sound);
+    return Resources::effects.size() - 1;
+}
+
+inline void PlaySoundEffect(size_t effect)
+{
+    if (effect <= Resources::effects.size())
+        PlaySound(Resources::effects[effect]);
+}

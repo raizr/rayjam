@@ -185,6 +185,10 @@ struct Pool
     {
         for (auto& powerup : powerups)
         {
+            if (!powerup.isAlive)
+            {
+                continue;
+            }
             powerup.Update();
             auto& player = scene::SceneManager::getInstance()->GetPlayer();
             powerup.Collide(player);

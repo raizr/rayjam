@@ -67,6 +67,7 @@ void Explosion::Update()
 
 void Explosion::Create(const Vector2& pos, float size)
 {
+	PlaySoundEffect(Resources::explosion[GetRandomValue(0, Resources::explosion.size() - 1)]);
 	Explosion* slot = nullptr;
 	for (auto& explosion : Pool::explosions)
 	{

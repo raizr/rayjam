@@ -206,6 +206,7 @@ void Player::Update()
 
         Vector2 shotVel = Vector2Add({0.1f, 0.1f}, Vector2Scale(shipVector, 1500));
         Missle::Create(shotPos, shotVel, orientation, type == NodeType::PLAYER, missleColor);
+        PlaySoundEffect(Resources::shoot[1]);
     }
 }
 

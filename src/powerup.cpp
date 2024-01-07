@@ -29,19 +29,21 @@ bool PowerUp::Collide(Node& other)
 {
 	if (Node::Collide(other))
 	{
-		//Sounds::PlaySoundEffect(Sounds::Upgrade);
 		Player& player = scene::SceneManager::getInstance()->GetPlayer();
 		switch (typePowerUp)
 		{
 			case PowerType::Shot:
+				PlaySoundEffect(Resources::powerups[0]);
 				player.shotSpeedMultiplyer += 0.10f;
 				break;
 
 			case PowerType::Shield:
+				PlaySoundEffect(Resources::powerups[1]);
 				player.shield = player.maxShield;
 				break;
 
 			case PowerType::Life:
+				PlaySoundEffect(Resources::powerups[2]);
 				if (player.life < 5)
 				{
 				    player.life++;

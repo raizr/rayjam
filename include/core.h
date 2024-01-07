@@ -14,6 +14,7 @@ namespace core
     enum class GameState
     {
         None,
+        Tutorial,
         Playing,
         Paused,
         ChangingLevel,
@@ -77,6 +78,7 @@ namespace core
         Rectangle pauseBound;
         bool isDrag = false;
         bool touchTap = false;
+        bool tutorial = false;
     };
     
 }

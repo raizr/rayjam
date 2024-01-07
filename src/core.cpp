@@ -23,6 +23,8 @@ Core* Core::getInstance()
 
 void Core::cleanup()
 {
+    
+    CloseAudioDevice();
     delete instance;
 }
 
@@ -123,6 +125,8 @@ Vector2 DrawCenteredText(const char* text, float textSize = 20, float yOffset = 
 
 void Core::Update()
 {
+    if (IsMusicStreamPlaying(Resources::music))
+        UpdateMusicStream(Resources::music);
     if (isTouch())
     {
         lastGesture = currentGesture;
@@ -183,6 +187,8 @@ void Core::Update()
 
     if (gameState == GameState::Playing)
     {
+        if (!IsMusicStreamPlaying(Resources::music))
+            PlayMusicStream(Resources::music);
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_TAB))
         {
             gameState = GameState::Paused;

@@ -165,6 +165,7 @@ void Enemy::Update()
         Vector2 shotPos = Vector2Add(position, Vector2Scale(shipVector, radius * 1.0f));
         Vector2 shotVel = Vector2Add(velocity, Vector2Scale(shipVector, 1500));
         Missle::Create(shotPos, shotVel, orientation, false, missleColor);
+        PlaySoundEffect(Resources::shoot[GetRandomValue(0, Resources::shoot.size() - 1)]);
     }
 }
 
